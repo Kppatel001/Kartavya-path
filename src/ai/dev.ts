@@ -1,1 +1,6 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/generate-board-aligned-exam-paper.ts';
+import '@/ai/flows/translate-exam-papers.ts';
+import '@/ai/flows/regenerate-individual-questions.ts';
