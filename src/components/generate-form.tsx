@@ -52,13 +52,13 @@ export function GenerateForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      state: 'Maharashtra',
-      board: 'CBSE',
-      classLevel: '10',
-      subject: 'Science',
+      state: '',
+      board: '',
+      classLevel: '',
+      subject: '',
       chapters: '',
-      totalMarks: 70,
-      language: 'English',
+      totalMarks: undefined,
+      language: '',
     },
   });
 
@@ -214,7 +214,7 @@ export function GenerateForm() {
                 <FormItem>
                   <FormLabel>Total Marks</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 100" {...field} />
+                    <Input type="number" placeholder="e.g., 100" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
