@@ -45,24 +45,20 @@ export default function MainLayout({
           <SidebarContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href="/generate" legacyBehavior passHref>
-                  <SidebarMenuButton asChild tooltip="Generate Paper">
-                    <a>
-                      <FilePlus2 />
-                      <span>Generate Paper</span>
-                    </a>
-                  </SidebarMenuButton>
-                </Link>
+                <SidebarMenuButton asChild tooltip="Generate Paper">
+                  <Link href="/generate">
+                    <FilePlus2 />
+                    <span>Generate Paper</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Link href="/history" legacyBehavior passHref>
-                  <SidebarMenuButton asChild tooltip="Paper History">
-                    <a>
-                      <History />
-                      <span>Paper History</span>
-                    </a>
-                  </SidebarMenuButton>
-                </Link>
+                <SidebarMenuButton asChild tooltip="Paper History">
+                  <Link href="/history">
+                    <History />
+                    <span>Paper History</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>

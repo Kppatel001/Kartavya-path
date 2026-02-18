@@ -78,11 +78,11 @@ export default function HistoryPage() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Link href={`/paper/${paper.id}`} passHref legacyBehavior>
-                  <Button asChild>
-                    <a><FileText className="mr-2 h-4 w-4" /> View Paper</a>
-                  </Button>
-                </Link>
+                <Button asChild>
+                  <Link href={`/paper/${paper.id}`}>
+                    <FileText className="mr-2 h-4 w-4" /> View Paper
+                  </Link>
+                </Button>
               </CardFooter>
             </Card>
           ))}
@@ -93,12 +93,12 @@ export default function HistoryPage() {
           <p className="text-muted-foreground mt-2">
             Start by creating your first exam paper.
           </p>
-          <Link href="/generate" passHref legacyBehavior>
-            <Button className="mt-4">
+          <Button asChild className="mt-4">
+            <Link href="/generate">
               <PlusCircle className="mr-2 h-4 w-4" />
               Generate New Paper
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       )}
     </div>
