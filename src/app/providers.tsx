@@ -3,13 +3,15 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/firebase';
-import { signInWithGoogle, signOut } from '@/lib/firebase/auth';
+import { signInWithGoogle, signOut, signInWithEmail, signUpWithEmail } from '@/lib/firebase/auth';
 
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,19 +33,29 @@ export function Providers({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const handleSignIn = async () => {
+  const handleSignInWithGoogle = async () => {
     await signInWithGoogle();
   };
 
   const handleSignOut = async () => {
     await signOut();
   };
+  
+  const handleSignInWithEmail = async (email: string, password: string) => {
+    await signInWithEmail(email, password);
+  }
+  
+  const handleSignUpWithEmail = async (email: string, password: string) => {
+    await signUpWithEmail(email, password);
+  }
 
   const value = {
     user,
     loading,
-    signInWithGoogle: handleSignIn,
+    signInWithGoogle: handleSignInWithGoogle,
     signOut: handleSignOut,
+    signInWithEmail: handleSignInWithEmail,
+    signUpWithEmail: handleSignUpWithEmail,
   };
 
   return (
