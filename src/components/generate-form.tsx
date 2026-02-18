@@ -80,21 +80,17 @@ export function GenerateForm() {
 
       const paperId = await addPaper(user.uid, title, paperSettings, result.examPaper);
 
-      if (paperId) {
-        toast({
-          title: 'Paper Generated Successfully!',
-          description: 'Redirecting to your new exam paper.',
-        });
-        router.push(`/paper/${paperId}`);
-      } else {
-        throw new Error('Failed to save the generated paper.');
-      }
-    } catch (error) {
+      toast({
+        title: 'Paper Generated Successfully!',
+        description: 'Redirecting to your new exam paper.',
+      });
+      router.push(`/paper/${paperId}`);
+    } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
-        description: 'An unexpected error occurred. Please try again.',
+        description: error.message || 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsGenerating(false);

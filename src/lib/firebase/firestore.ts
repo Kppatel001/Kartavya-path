@@ -15,8 +15,10 @@ import type { ExamPaper, ExamPaperSettings } from '@/types';
 
 const papersCollection = 'papers';
 
-export async function addPaper(userId: string, title: string, settings: ExamPaperSettings, content: string): Promise<string | null> {
-  if (!db) return null;
+export async function addPaper(userId: string, title: string, settings: ExamPaperSettings, content: string): Promise<string> {
+  if (!db) {
+    throw new Error("Firestore database is not initialized.");
+  }
   try {
     const docRef = await addDoc(collection(db, papersCollection), {
       userId,
@@ -26,9 +28,12 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
       createdAt: serverTimestamp(),
     });
     return docRef.id;
-  } catch (e) {
-    console.error("Error adding document: ", e);
-    return null;
+  } catch (e: any) {
+    console.error("Error adding document to Firestore: ", e);
+    if (e.code === 'permission-denied') {
+        throw new Error("Permission denied. You do not have access to save data. Please check your Firestore security rules.");
+    }
+    throw new Error("Failed to save paper to the database. " + e.message);
   }
 }
 
