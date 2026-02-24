@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -41,7 +41,23 @@ const formSchema = z.object({
   chapters: z.string().min(1, 'Please specify at least one chapter.'),
   totalMarks: z.coerce.number().min(10, 'Total marks must be at least 10.').max(100, 'Total marks cannot exceed 100.'),
   language: z.string().min(1, 'Language is required.'),
-  sectionAQuestions: z.preprocess(
+  sectionAMcq: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionAFillInTheBlanks: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionAMatching: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionATrueFalse: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionAOneMark: z.preprocess(
     (a) => (a === '' ? undefined : a),
     z.coerce.number().min(0, 'Must be a non-negative number.').optional()
   ),
@@ -75,7 +91,11 @@ export function GenerateForm() {
       chapters: '',
       totalMarks: undefined,
       language: '',
-      sectionAQuestions: undefined,
+      sectionAMcq: undefined,
+      sectionAFillInTheBlanks: undefined,
+      sectionAMatching: undefined,
+      sectionATrueFalse: undefined,
+      sectionAOneMark: undefined,
       sectionBQuestions: undefined,
       sectionCQuestions: undefined,
       sectionDQuestions: undefined,
@@ -265,60 +285,127 @@ export function GenerateForm() {
             </div>
             
             <div className="md:col-span-3 border-t pt-6 mt-2">
-                 <p className="text-sm font-medium text-foreground mb-4">Section-wise Questions (Optional)</p>
-                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <FormField
-                    control={form.control}
-                    name="sectionAQuestions"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Section A</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="sectionBQuestions"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Section B</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="sectionCQuestions"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Section C</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g., 8" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="sectionDQuestions"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Section D</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g., 4" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+                 <p className="text-lg font-semibold text-foreground mb-2">Blueprint / Section-wise Questions (Optional)</p>
+                 <p className="text-sm text-muted-foreground mb-6">Define the number of questions for each section and type.</p>
+
+                 <div className="space-y-8">
+                    {/* Section A */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-card">
+                        <h3 className="font-medium text-foreground">Section A</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="sectionAMcq"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>MCQs</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="sectionAFillInTheBlanks"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Fill in Blanks</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="sectionAMatching"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Matching</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="sectionATrueFalse"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>True/False</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 4" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="sectionAOneMark"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>1-Mark Qs</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Other Sections */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-card">
+                        <h3 className="font-medium text-foreground">Sections B, C, D</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            <FormField
+                                control={form.control}
+                                name="sectionBQuestions"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Section B Questions</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="sectionCQuestions"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Section C Questions</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 8" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="sectionDQuestions"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Section D Questions</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="e.g., 4" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
                  </div>
             </div>
           </CardContent>
