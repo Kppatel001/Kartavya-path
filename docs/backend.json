@@ -12,7 +12,11 @@
         "chapters": { "type": "string" },
         "totalMarks": { "type": "number" },
         "language": { "type": "string" },
-        "schoolLogo": { "type": "string", "format": "uri" }
+        "schoolLogo": { "type": "string", "format": "uri" },
+        "sectionAQuestions": { "type": "number" },
+        "sectionBQuestions": { "type": "number" },
+        "sectionCQuestions": { "type": "number" },
+        "sectionDQuestions": { "type": "number" }
       },
       "required": ["state", "board", "classLevel", "subject", "chapters", "totalMarks", "language"]
     },

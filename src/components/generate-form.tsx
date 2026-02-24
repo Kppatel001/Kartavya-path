@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +41,22 @@ const formSchema = z.object({
   chapters: z.string().min(1, 'Please specify at least one chapter.'),
   totalMarks: z.coerce.number().min(10, 'Total marks must be at least 10.').max(100, 'Total marks cannot exceed 100.'),
   language: z.string().min(1, 'Language is required.'),
+  sectionAQuestions: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionBQuestions: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionCQuestions: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
+  sectionDQuestions: z.preprocess(
+    (a) => (a === '' ? undefined : a),
+    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
+  ),
 });
 
 export function GenerateForm() {
@@ -59,6 +75,10 @@ export function GenerateForm() {
       chapters: '',
       totalMarks: undefined,
       language: '',
+      sectionAQuestions: undefined,
+      sectionBQuestions: undefined,
+      sectionCQuestions: undefined,
+      sectionDQuestions: undefined,
     },
   });
 
@@ -74,7 +94,13 @@ export function GenerateForm() {
 
     setIsGenerating(true);
     try {
-      const result = await generateBoardAlignedExamPaper(values);
+      // Remove undefined keys before sending to AI flow
+      const submissionValues = Object.fromEntries(
+        Object.entries(values).filter(([, v]) => v !== undefined)
+      );
+
+      const result = await generateBoardAlignedExamPaper(submissionValues);
+      
       const paperSettings: ExamPaperSettings = values;
       const title = `${values.subject} - Class ${values.classLevel} (${values.board})`;
 
@@ -85,8 +111,9 @@ export function GenerateForm() {
         description: 'Redirecting to your new exam paper.',
       });
       router.push(`/paper/${paperId}`);
+
     } catch (error: any) {
-      console.error(error);
+      console.error("Generation submission failed", error);
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
@@ -104,7 +131,7 @@ export function GenerateForm() {
           <CardHeader>
             <CardTitle>Paper Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
               name="state"
@@ -185,24 +212,6 @@ export function GenerateForm() {
                 </FormItem>
               )}
             />
-            <div className="md:col-span-2">
-              <FormField
-                control={form.control}
-                name="chapters"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Chapters</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Chapter 1, Chapter 2, Algebra" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Enter chapter names or topics, separated by commas.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <FormField
               control={form.control}
               name="totalMarks"
@@ -236,6 +245,82 @@ export function GenerateForm() {
                 </FormItem>
               )}
             />
+            <div className="md:col-span-3">
+              <FormField
+                control={form.control}
+                name="chapters"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Chapters</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Chapter 1, Chapter 2, Algebra" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Enter chapter names or topics, separated by commas.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="md:col-span-3 border-t pt-6 mt-2">
+                 <p className="text-sm font-medium text-foreground mb-4">Section-wise Questions (Optional)</p>
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <FormField
+                    control={form.control}
+                    name="sectionAQuestions"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Section A</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="sectionBQuestions"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Section B</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ''} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="sectionCQuestions"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Section C</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 8" {...field} value={field.value ?? ''} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="sectionDQuestions"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Section D</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 4" {...field} value={field.value ?? ''} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                 </div>
+            </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" size="lg" disabled={isGenerating}>

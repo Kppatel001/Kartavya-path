@@ -18,6 +18,10 @@ const GenerateBoardAlignedExamPaperInputSchema = z.object({
   chapters: z.string().describe('The chapters to include in the exam paper (e.g., "Chapter 1, Chapter 2").'),
   totalMarks: z.number().describe('The total marks for the exam paper.'),
   language: z.string().optional().describe('The language for the exam paper (e.g., "English", "Hindi"). Defaults to English.'),
+  sectionAQuestions: z.number().optional().describe('Number of questions in Section A.'),
+  sectionBQuestions: z.number().optional().describe('Number of questions in Section B.'),
+  sectionCQuestions: z.number().optional().describe('Number of questions in Section C.'),
+  sectionDQuestions: z.number().optional().describe('Number of questions in Section D.'),
 });
 
 export type GenerateBoardAlignedExamPaperInput = z.infer<typeof GenerateBoardAlignedExamPaperInputSchema>;
@@ -48,8 +52,23 @@ Chapters: {{{chapters}}}
 Total Marks: {{{totalMarks}}}
 Language: {{{language}}}
 
+Section-wise question distribution:
+{{#if sectionAQuestions}}
+- Section A: {{{sectionAQuestions}}} questions
+{{/if}}
+{{#if sectionBQuestions}}
+- Section B: {{{sectionBQuestions}}} questions
+{{/if}}
+{{#if sectionCQuestions}}
+- Section C: {{{sectionCQuestions}}} questions
+{{/if}}
+{{#if sectionDQuestions}}
+- Section D: {{{sectionDQuestions}}} questions
+{{/if}}
+
 The exam paper should:
 - Be in the appropriate format for the specified board.
+- Be structured into sections (e.g., Section A, Section B) based on the question counts provided above. If no section-wise counts are given, create a standard layout for the board.
 - Cover the specified chapters.
 - Have a total mark distribution that matches the specified total marks.
 - Include clear instructions for each section.
