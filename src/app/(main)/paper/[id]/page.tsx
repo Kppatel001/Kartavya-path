@@ -45,10 +45,11 @@ export default function PaperPage({ params }: { params: { id: string } }) {
   const [targetLanguage, setTargetLanguage] = useState(languages[1]);
 
   const [questionToRegen, setQuestionToRegen] = useState("");
+  const { id } = params;
 
   useEffect(() => {
     if (user) {
-      getPaper(params.id)
+      getPaper(id)
         .then((fetchedPaper) => {
           if (fetchedPaper && fetchedPaper.userId === user.uid) {
             setPaper(fetchedPaper);
@@ -65,11 +66,11 @@ export default function PaperPage({ params }: { params: { id: string } }) {
           router.push('/history');
         });
     }
-  }, [user, params.id, router, toast]);
+  }, [user, id, router, toast]);
 
   const handleSave = () => {
     startSavingTransition(async () => {
-      await updatePaperContent(params.id, content);
+      await updatePaperContent(id, content);
       toast({ title: 'Success', description: 'Paper content saved successfully.' });
     });
   };
