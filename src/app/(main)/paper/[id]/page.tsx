@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { getPaper, updatePaperContent } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,7 +31,9 @@ import { languages } from '@/lib/data';
 import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
 import { regenerateQuestion } from '@/ai/flows/regenerate-individual-questions';
 
-export default function PaperPage({ params }: { params: { id: string } }) {
+export default function PaperPage() {
+  const params = useParams();
+  const id = params.id as string;
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -45,10 +47,9 @@ export default function PaperPage({ params }: { params: { id: string } }) {
   const [targetLanguage, setTargetLanguage] = useState(languages[1]);
 
   const [questionToRegen, setQuestionToRegen] = useState("");
-  const { id } = params;
 
   useEffect(() => {
-    if (user) {
+    if (user && id) {
       getPaper(id)
         .then((fetchedPaper) => {
           if (fetchedPaper && fetchedPaper.userId === user.uid) {
@@ -69,6 +70,7 @@ export default function PaperPage({ params }: { params: { id: string } }) {
   }, [user, id, router, toast]);
 
   const handleSave = () => {
+    if (!id) return;
     startSavingTransition(async () => {
       await updatePaperContent(id, content);
       toast({ title: 'Success', description: 'Paper content saved successfully.' });
