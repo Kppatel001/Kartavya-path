@@ -11,7 +11,7 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string, name?: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,8 +45,8 @@ export function Providers({ children }: { children: ReactNode }) {
     await signInWithEmail(email, password);
   }
   
-  const handleSignUpWithEmail = async (email: string, password: string) => {
-    await signUpWithEmail(email, password);
+  const handleSignUpWithEmail = async (email: string, password: string, name?: string) => {
+    await signUpWithEmail(email, password, name);
   }
 
   const value = {

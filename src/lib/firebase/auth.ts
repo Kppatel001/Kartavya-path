@@ -4,6 +4,7 @@ import {
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
   type AuthError
 } from 'firebase/auth';
 import { auth } from './firebase';
@@ -36,12 +37,15 @@ export const signInWithEmail = async (email: string, password: string): Promise<
     }
 };
 
-export const signUpWithEmail = async (email: string, password: string): Promise<void> => {
+export const signUpWithEmail = async (email: string, password: string, name?: string): Promise<void> => {
     if (!auth) throw new Error("Firebase is not configured.");
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      if (name && userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: name });
+      }
     } catch(error) {
-      console.error("Error signing up with email: ", error);
+      console.error("Error up with email: ", error);
       const authError = error as AuthError;
       if (authError.code === 'auth/email-already-in-use') {
         throw new Error('This email is already in use. Please sign in or use a different email.');
