@@ -18,14 +18,7 @@ const GenerateBoardAlignedExamPaperInputSchema = z.object({
   chapters: z.string().describe('The chapters to include in the exam paper (e.g., "Chapter 1, Chapter 2").'),
   totalMarks: z.number().describe('The total marks for the exam paper.'),
   language: z.string().optional().describe('The language for the exam paper (e.g., "English", "Hindi"). Defaults to English.'),
-  sectionAMcq: z.number().optional().describe('Number of Multiple Choice Questions (MCQ) in Section A.'),
-  sectionAFillInTheBlanks: z.number().optional().describe('Number of Fill in the Blanks questions in Section A.'),
-  sectionAMatching: z.number().optional().describe('Number of Matching questions in Section A.'),
-  sectionATrueFalse: z.number().optional().describe('Number of True/False questions in Section A.'),
-  sectionAOneMark: z.number().optional().describe('Number of 1-mark short answer questions in Section A.'),
-  sectionBQuestions: z.number().optional().describe('Number of questions in Section B.'),
-  sectionCQuestions: z.number().optional().describe('Number of questions in Section C.'),
-  sectionDQuestions: z.number().optional().describe('Number of questions in Section D.'),
+  blueprintText: z.string().optional().describe('Extracted blueprint text or manual blueprint description.'),
 });
 
 export type GenerateBoardAlignedExamPaperInput = z.infer<typeof GenerateBoardAlignedExamPaperInputSchema>;
@@ -56,37 +49,15 @@ Chapters: {{{chapters}}}
 Total Marks: {{{totalMarks}}}
 Language: {{{language}}}
 
-Section-wise question distribution / Blueprint:
-Section A Blueprint:
-{{#if sectionAMcq}}
-- Multiple Choice Questions (MCQ): {{{sectionAMcq}}}
-{{/if}}
-{{#if sectionAFillInTheBlanks}}
-- Fill in the Blanks: {{{sectionAFillInTheBlanks}}}
-{{/if}}
-{{#if sectionAMatching}}
-- Match the Following: {{{sectionAMatching}}}
-{{/if}}
-{{#if sectionATrueFalse}}
-- True/False: {{{sectionATrueFalse}}}
-{{/if}}
-{{#if sectionAOneMark}}
-- Very Short Answer (1 Mark): {{{sectionAOneMark}}}
-{{/if}}
-
-{{#if sectionBQuestions}}
-- Section B: {{{sectionBQuestions}}} questions
-{{/if}}
-{{#if sectionCQuestions}}
-- Section C: {{{sectionCQuestions}}} questions
-{{/if}}
-{{#if sectionDQuestions}}
-- Section D: {{{sectionDQuestions}}} questions
+{{#if blueprintText}}
+Blueprint / Instructions:
+{{{blueprintText}}}
 {{/if}}
 
 The exam paper should:
 - Be in the appropriate format for the specified board.
-- Be structured into sections (e.g., Section A, Section B) based on the question counts and blueprint provided above. If no section-wise counts are given, create a standard layout for the board.
+- Follow the provided blueprint if available. Otherwise, create a standard layout for the board.
+- Be structured into sections (e.g., Section A, Section B).
 - Cover the specified chapters.
 - Have a total mark distribution that matches the specified total marks.
 - Include clear instructions for each section.

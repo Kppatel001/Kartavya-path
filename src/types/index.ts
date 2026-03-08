@@ -9,14 +9,7 @@ export type ExamPaperSettings = {
   totalMarks: number;
   language: string;
   schoolLogo?: string;
-  sectionAMcq?: number;
-  sectionAFillInTheBlanks?: number;
-  sectionAMatching?: number;
-  sectionATrueFalse?: number;
-  sectionAOneMark?: number;
-  sectionBQuestions?: number;
-  sectionCQuestions?: number;
-  sectionDQuestions?: number;
+  blueprintText?: string;
 };
 
 export type ExamPaper = {

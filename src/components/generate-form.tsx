@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,13 +24,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { indianStates, educationBoards, classLevels, subjects, languages } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
+import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
@@ -41,38 +43,7 @@ const formSchema = z.object({
   chapters: z.string().min(1, 'Please specify at least one chapter.'),
   totalMarks: z.coerce.number().min(10, 'Total marks must be at least 10.').max(100, 'Total marks cannot exceed 100.'),
   language: z.string().min(1, 'Language is required.'),
-  sectionAMcq: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionAFillInTheBlanks: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionAMatching: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionATrueFalse: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionAOneMark: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionBQuestions: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionCQuestions: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
-  sectionDQuestions: z.preprocess(
-    (a) => (a === '' ? undefined : a),
-    z.coerce.number().min(0, 'Must be a non-negative number.').optional()
-  ),
+  blueprintText: z.string().optional(),
 });
 
 export function GenerateForm() {
@@ -80,6 +51,9 @@ export function GenerateForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,16 +65,50 @@ export function GenerateForm() {
       chapters: '',
       totalMarks: undefined,
       language: '',
-      sectionAMcq: undefined,
-      sectionAFillInTheBlanks: undefined,
-      sectionAMatching: undefined,
-      sectionATrueFalse: undefined,
-      sectionAOneMark: undefined,
-      sectionBQuestions: undefined,
-      sectionCQuestions: undefined,
-      sectionDQuestions: undefined,
+      blueprintText: '',
     },
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadedFile(file);
+    setIsExtracting(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const dataUri = event.target?.result as string;
+        try {
+          const result = await extractBlueprint({ fileDataUri: dataUri });
+          form.setValue('blueprintText', result.extractedBlueprint);
+          toast({
+            title: 'Blueprint Extracted',
+            description: 'AI has successfully analyzed your uploaded document.',
+          });
+        } catch (error) {
+          toast({
+            variant: 'destructive',
+            title: 'Extraction Failed',
+            description: 'Could not extract details from the document.',
+          });
+        } finally {
+          setIsExtracting(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('File reading failed', error);
+      setIsExtracting(false);
+    }
+  };
+
+  const clearFile = () => {
+    setUploadedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    form.setValue('blueprintText', '');
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
@@ -114,14 +122,11 @@ export function GenerateForm() {
 
     setIsGenerating(true);
     try {
-      // Remove undefined keys before sending to AI flow
-      const submissionValues = Object.fromEntries(
-        Object.entries(values).filter(([, v]) => v !== undefined)
-      );
-
-      const result = await generateBoardAlignedExamPaper(submissionValues);
+      const result = await generateBoardAlignedExamPaper(values);
       
-      const paperSettings: ExamPaperSettings = values;
+      const paperSettings: ExamPaperSettings = {
+        ...values,
+      };
       const title = `${values.subject} - Class ${values.classLevel} (${values.board})`;
 
       const paperId = await addPaper(user.uid, title, paperSettings, result.examPaper);
@@ -285,132 +290,71 @@ export function GenerateForm() {
             </div>
             
             <div className="md:col-span-3 border-t pt-6 mt-2">
-                 <p className="text-lg font-semibold text-foreground mb-2">Blueprint / Section-wise Questions (Optional)</p>
-                 <p className="text-sm text-muted-foreground mb-6">Define the number of questions for each section and type.</p>
+                 <p className="text-lg font-semibold text-foreground mb-2">Paper Blueprint</p>
+                 <p className="text-sm text-muted-foreground mb-6">Upload a syllabus document or manual blueprint to guide the AI.</p>
 
-                 <div className="space-y-8">
-                    {/* Section A */}
-                    <div className="space-y-4 p-4 border rounded-lg bg-card">
-                        <h3 className="font-medium text-foreground">Section A</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="sectionAMcq"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>MCQs</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="sectionAFillInTheBlanks"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Fill in Blanks</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="sectionAMatching"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Matching</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="sectionATrueFalse"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>True/False</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 4" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="sectionAOneMark"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>1-Mark Qs</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 5" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                 <div className="space-y-6">
+                    <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 bg-muted/50 transition-colors hover:bg-muted">
+                        <input
+                            type="file"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept=".pdf,image/*,.doc,.docx"
+                        />
+                        {isExtracting ? (
+                            <div className="flex flex-col items-center gap-2">
+                                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                                <p className="text-sm font-medium">Extracting details with AI...</p>
+                            </div>
+                        ) : uploadedFile ? (
+                            <div className="flex flex-col items-center gap-3">
+                                <FileText className="h-12 w-12 text-primary" />
+                                <div className="text-center">
+                                    <p className="text-sm font-semibold">{uploadedFile.name}</p>
+                                    <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={clearFile} className="text-destructive">
+                                    <X className="mr-2 h-4 w-4" /> Remove File
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                <Upload className="h-12 w-12 text-muted-foreground" />
+                                <div className="text-center">
+                                    <p className="text-sm font-semibold">Click to upload blueprint</p>
+                                    <p className="text-xs text-muted-foreground">PDF, Image, or Word Document</p>
+                                </div>
+                                <Button type="button" variant="outline" size="sm">Select File</Button>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Other Sections */}
-                    <div className="space-y-4 p-4 border rounded-lg bg-card">
-                        <h3 className="font-medium text-foreground">Sections B, C, D</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="sectionBQuestions"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Section B Questions</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
+                    <FormField
+                      control={form.control}
+                      name="blueprintText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Extracted / Manual Blueprint Details</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Instructions, section breakdown, or marking scheme..." 
+                              className="min-h-[150px]"
+                              {...field} 
                             />
-                            <FormField
-                                control={form.control}
-                                name="sectionCQuestions"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Section C Questions</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 8" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="sectionDQuestions"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Section D Questions</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="e.g., 4" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </div>
+                          </FormControl>
+                          <FormDescription>
+                            This text will guide the AI in structuring the exam paper.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                  </div>
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" size="lg" disabled={isGenerating}>
+            <Button type="submit" size="lg" disabled={isGenerating || isExtracting}>
               {isGenerating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
