@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
@@ -9,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Printer, Save, Languages, RefreshCw, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Loader2, Printer, Save, Languages, RefreshCw, Pencil, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,7 @@ import { languages } from '@/lib/data';
 import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
 import { regenerateQuestion } from '@/ai/flows/regenerate-individual-questions';
 
-const LINES_PER_PAGE = 40;
+const LINES_PER_PAGE = 45;
 
 export default function PaperPage() {
   const params = useParams();
@@ -46,6 +47,7 @@ export default function PaperPage() {
   const [isSaving, startSavingTransition] = useTransition();
   const [isTranslating, startTranslationTransition] = useTransition();
   const [isRegenerating, startRegeneratingTransition] = useTransition();
+  const [copied, setCopied] = useState(false);
 
   const [targetLanguage, setTargetLanguage] = useState(languages[1]);
   const [questionToRegen, setQuestionToRegen] = useState("");
@@ -78,7 +80,6 @@ export default function PaperPage() {
             setContent(fetchedPaper.content);
             paginateContent(fetchedPaper.content);
           } else {
-            // Paper not found or doesn't belong to the user
             toast({ variant: 'destructive', title: 'Error', description: 'Paper not found or access denied.' });
             router.push('/history');
           }
@@ -105,6 +106,13 @@ export default function PaperPage() {
     window.print();
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    toast({ title: 'Copied', description: 'Exam paper content copied to clipboard.' });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleTranslate = () => {
     if (!paper || isTranslating) return;
     startTranslationTransition(async () => {
@@ -129,9 +137,9 @@ export default function PaperPage() {
             board: paper.settings.board,
             classLevel: paper.settings.classLevel,
             subject: paper.settings.subject,
-            chapter: paper.settings.chapters.split(',')[0].trim(), // Use first chapter
+            chapter: paper.settings.chapters.split(',')[0].trim(),
             question: questionToRegen,
-            marks: 5 // Default marks for now
+            marks: 5
         });
         const newContent = content + '\n\n--- Regenerated Question ---\n' + result.regeneratedQuestion;
         setContent(newContent);
@@ -159,30 +167,78 @@ export default function PaperPage() {
     );
   }
 
-  if (!paper) {
-    return null; // or a proper not found component
-  }
+  if (!paper) return null;
+
+  const PaperHeader = ({ isPrint = false }) => (
+    <div className={`mb-8 border-b-2 border-black pb-4 text-center ${isPrint ? 'block' : ''}`}>
+        {paper.settings.schoolLogo && (
+            <img src={paper.settings.schoolLogo} alt="Logo" className="mx-auto h-16 w-auto mb-2 object-contain" />
+        )}
+        <h2 className="text-2xl font-bold uppercase">{paper.settings.schoolName || 'EXAMINATION PAPER'}</h2>
+        <h3 className="text-lg font-semibold">{paper.settings.subject} - Class {paper.settings.classLevel}</h3>
+        <p className="text-sm italic">{paper.settings.board}</p>
+        <div className="mt-4 flex justify-between text-sm font-bold border-t border-black pt-2">
+            <div>TIME ALLOWED: {paper.settings.timeAllowed || '---'}</div>
+            <div>TOTAL MARKS: {paper.settings.totalMarks}</div>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-4 text-left border-t border-dashed border-black/30 pt-2 font-mono text-xs">
+            <div>Name: _________________________________</div>
+            <div>Roll No: __________________</div>
+        </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <style>{`
         @media print {
           body * { visibility: hidden; }
-          .no-print { display: none; }
+          .no-print, .no-print * { display: none !important; }
           #printable, #printable * { visibility: visible; }
-          #printable { position: absolute; left: 0; top: 0; width: 100%; }
-          .printable-page { page-break-after: always; }
+          #printable { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            background: white;
+            color: black;
+          }
+          .printable-page { 
+            page-break-after: always; 
+            min-height: 297mm; /* A4 height */
+            padding: 20mm;
+            border: none;
+          }
+          pre {
+            white-space: pre-wrap !important;
+            word-wrap: break-word !important;
+            font-family: serif !important;
+            font-size: 11pt !important;
+            line-height: 1.5 !important;
+          }
         }
       `}</style>
-      <div>
-        <Button variant="ghost" onClick={() => router.back()} className="mb-4 no-print">
+      
+      <div className="no-print">
+        <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to History
         </Button>
-        <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
-        <p className="text-muted-foreground">
-          Edit, translate, or print your generated exam paper.
-        </p>
+        <div className="flex justify-between items-start">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
+                <p className="text-muted-foreground">Review and finalize your board-aligned paper.</p>
+            </div>
+            <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={handleCopy}>
+                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <Button onClick={handlePrint}>
+                    <Printer className="mr-2 h-4 w-4" /> Print / PDF
+                </Button>
+            </div>
+        </div>
       </div>
+
       <div className="flex flex-wrap gap-2 no-print">
         {isEditing ? (
           <>
@@ -192,7 +248,6 @@ export default function PaperPage() {
             </Button>
             <Button variant="outline" onClick={() => {
               setIsEditing(false);
-              // Revert content to original paper content if user cancels
               setContent(paper.content);
               paginateContent(paper.content);
             }}>
@@ -200,9 +255,9 @@ export default function PaperPage() {
             </Button>
           </>
         ) : (
-          <Button onClick={() => setIsEditing(true)}>
+          <Button variant="outline" onClick={() => setIsEditing(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit Paper
+            Edit Content
           </Button>
         )}
         
@@ -213,7 +268,7 @@ export default function PaperPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Translate Paper</DialogTitle>
-              <DialogDescription>Select a language to translate the current paper content.</DialogDescription>
+              <DialogDescription>Select target language for translation.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -232,24 +287,25 @@ export default function PaperPage() {
               <DialogClose asChild>
                 <Button onClick={handleTranslate} disabled={isTranslating}>
                   {isTranslating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Translate and Save
+                  Start Translation
                 </Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
          <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" disabled={isEditing}><RefreshCw className="mr-2 h-4 w-4" /> Regenerate Question</Button>
+            <Button variant="outline" disabled={isEditing}><RefreshCw className="mr-2 h-4 w-4" /> Fix Question</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Regenerate Question</DialogTitle>
-              <DialogDescription>Paste a question from your paper to regenerate it with AI.</DialogDescription>
+              <DialogDescription>AI will rewrite the question while keeping the same marks and topic.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <Textarea 
-                placeholder="Paste the question to regenerate here..."
+                placeholder="Paste the question text here..."
                 value={questionToRegen}
                 onChange={(e) => setQuestionToRegen(e.target.value)}
                 rows={5}
@@ -259,52 +315,52 @@ export default function PaperPage() {
               <DialogClose asChild>
                 <Button onClick={handleRegenerate} disabled={isRegenerating || !questionToRegen}>
                   {isRegenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Regenerate and Save
+                  Regenerate
                 </Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Button onClick={handlePrint} variant="default" disabled={isEditing}>
-          <Printer className="mr-2 h-4 w-4" />
-          Print / Export PDF
-        </Button>
       </div>
       
       {isEditing ? (
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="min-h-[70vh] font-mono text-sm leading-relaxed"
-          placeholder="Your generated paper will appear here..."
+          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6"
+          placeholder="Edit your exam paper here..."
         />
       ) : (
         <div className="space-y-4">
-          <div className="border rounded-lg p-8 bg-card shadow-sm min-h-[70vh] font-sans text-sm leading-relaxed">
-            <pre className="whitespace-pre-wrap font-inherit">
-              {pages[currentPage - 1] || 'No content to display.'}
+          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black">
+            <PaperHeader />
+            <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
+              {pages[currentPage - 1] || 'No content found.'}
             </pre>
           </div>
           {pages.length > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-4 no-print">
-              <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Previous
+            <div className="flex justify-center items-center gap-4 no-print">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="mr-2 h-4 w-4" /> Prev
               </Button>
-              <span className="text-sm text-muted-foreground">Page {currentPage} of {pages.length}</span>
-              <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(pages.length, p + 1))} disabled={currentPage === pages.length}>
-                Next
-                <ChevronRight className="ml-2 h-4 w-4" />
+              <span className="text-sm font-medium">Page {currentPage} of {pages.length}</span>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(pages.length, p + 1))} disabled={currentPage === pages.length}>
+                Next <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           )}
         </div>
       )}
 
+      {/* Printable Area (Hidden on screen) */}
       <div id="printable" className="hidden">
         {pages.map((pageContent, index) => (
-          <div key={index} className="printable-page p-12">
-              <pre className="whitespace-pre-wrap font-sans text-sm">{pageContent}</pre>
+          <div key={index} className="printable-page">
+              {index === 0 && <PaperHeader isPrint />}
+              <pre className="whitespace-pre-wrap">{pageContent}</pre>
+              <div className="mt-8 text-center text-[10pt] italic border-t pt-2 border-gray-300 no-print">
+                Generated by ExamSnap AI
+              </div>
           </div>
         ))}
       </div>

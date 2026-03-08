@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type ExamPaperSettings = {
@@ -8,6 +9,8 @@ export type ExamPaperSettings = {
   chapters: string;
   totalMarks: number;
   language: string;
+  schoolName?: string;
+  timeAllowed?: string;
   schoolLogo?: string;
   blueprintText?: string;
 };

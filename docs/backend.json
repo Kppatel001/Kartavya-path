@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "ExamPaperSettings": {
@@ -12,11 +13,10 @@
         "chapters": { "type": "string" },
         "totalMarks": { "type": "number" },
         "language": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "timeAllowed": { "type": "string" },
         "schoolLogo": { "type": "string", "format": "uri" },
-        "sectionAQuestions": { "type": "number" },
-        "sectionBQuestions": { "type": "number" },
-        "sectionCQuestions": { "type": "number" },
-        "sectionDQuestions": { "type": "number" }
+        "blueprintText": { "type": "string" }
       },
       "required": ["state", "board", "classLevel", "subject", "chapters", "totalMarks", "language"]
     },

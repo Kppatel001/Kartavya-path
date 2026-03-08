@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,7 +33,7 @@ import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
@@ -43,6 +44,8 @@ const formSchema = z.object({
   chapters: z.string().min(1, 'Please specify at least one chapter.'),
   totalMarks: z.coerce.number().min(10, 'Total marks must be at least 10.').max(100, 'Total marks cannot exceed 100.'),
   language: z.string().min(1, 'Language is required.'),
+  schoolName: z.string().optional(),
+  timeAllowed: z.string().optional(),
   blueprintText: z.string().optional(),
 });
 
@@ -53,7 +56,10 @@ export function GenerateForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [schoolLogoDataUri, setSchoolLogoDataUri] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,6 +71,8 @@ export function GenerateForm() {
       chapters: '',
       totalMarks: undefined,
       language: '',
+      schoolName: '',
+      timeAllowed: '',
       blueprintText: '',
     },
   });
@@ -104,10 +112,27 @@ export function GenerateForm() {
     }
   };
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        setSchoolLogoDataUri(event.target?.result as string);
+        toast({ title: 'Logo Uploaded', description: 'School logo has been added to your settings.' });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const clearFile = () => {
     setUploadedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     form.setValue('blueprintText', '');
+  };
+
+  const clearLogo = () => {
+    setSchoolLogoDataUri(null);
+    if (logoInputRef.current) logoInputRef.current.value = '';
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -126,6 +151,7 @@ export function GenerateForm() {
       
       const paperSettings: ExamPaperSettings = {
         ...values,
+        schoolLogo: schoolLogoDataUri || undefined,
       };
       const title = `${values.subject} - Class ${values.classLevel} (${values.board})`;
 
@@ -154,147 +180,201 @@ export function GenerateForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader>
-            <CardTitle>Paper Details</CardTitle>
+            <CardTitle>Paper Configuration</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a state" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {indianStates.map((state) => (
-                        <SelectItem key={state} value={state}>{state}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="board"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Board</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a board" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {educationBoards.map((board) => (
-                        <SelectItem key={board} value={board}>{board}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="classLevel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Class</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {classLevels.map((level) => (
-                        <SelectItem key={level} value={level}>{level}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="subject"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a subject" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {subjects.map((subject) => (
-                        <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="totalMarks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Total Marks</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 100" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="language"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Language</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a language" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {languages.map((lang) => (
-                        <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="md:col-span-3">
-              <FormField
-                control={form.control}
-                name="chapters"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Chapters</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Chapter 1, Chapter 2, Algebra" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Enter chapter names or topics, separated by commas.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <CardContent className="space-y-8">
+            {/* Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="schoolName"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>School Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter school or institution name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex items-end gap-4">
+                    <div className="flex-1">
+                        <FormLabel>School Logo</FormLabel>
+                        <div className="mt-2 flex items-center gap-4">
+                            <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
+                            {schoolLogoDataUri ? (
+                                <div className="relative h-10 w-10 border rounded overflow-hidden group">
+                                    <img src={schoolLogoDataUri} alt="Logo" className="h-full w-full object-contain" />
+                                    <button onClick={clearLogo} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                        <X className="h-4 w-4 text-white" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
+                                    <ImageIcon className="mr-2 h-4 w-4" /> Upload Logo
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a state" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {indianStates.map((state) => (
+                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="board"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Board</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a board" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {educationBoards.map((board) => (
+                            <SelectItem key={board} value={board}>{board}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="classLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Class</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {classLevels.map((level) => (
+                            <SelectItem key={level} value={level}>{level}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subject</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a subject" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {subjects.map((subject) => (
+                            <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="totalMarks"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Marks</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 80" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="timeAllowed"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time Allowed</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 3 Hours" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Language</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a language" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {languages.map((lang) => (
+                            <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="md:col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="chapters"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Chapters / Topics</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Algebra, Geometry, Statistics" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Separate multiple chapters with commas.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
             </div>
-            
-            <div className="md:col-span-3 border-t pt-6 mt-2">
-                 <p className="text-lg font-semibold text-foreground mb-2">Paper Blueprint</p>
-                 <p className="text-sm text-muted-foreground mb-6">Upload a syllabus document or manual blueprint to guide the AI.</p>
+
+            {/* Blueprint Section */}
+            <div className="border-t pt-8">
+                 <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Exam Blueprint</h3>
+                 </div>
+                 <p className="text-sm text-muted-foreground mb-6">Upload a syllabus or blueprint document. AI will extract the structure for you.</p>
 
                  <div className="space-y-6">
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 bg-muted/50 transition-colors hover:bg-muted">
+                    <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 bg-muted/30 transition-colors hover:bg-muted/50">
                         <input
                             type="file"
                             className="hidden"
@@ -305,7 +385,7 @@ export function GenerateForm() {
                         {isExtracting ? (
                             <div className="flex flex-col items-center gap-2">
                                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                                <p className="text-sm font-medium">Extracting details with AI...</p>
+                                <p className="text-sm font-medium">Analyzing document with AI...</p>
                             </div>
                         ) : uploadedFile ? (
                             <div className="flex flex-col items-center gap-3">
@@ -314,16 +394,16 @@ export function GenerateForm() {
                                     <p className="text-sm font-semibold">{uploadedFile.name}</p>
                                     <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
-                                <Button variant="ghost" size="sm" onClick={clearFile} className="text-destructive">
-                                    <X className="mr-2 h-4 w-4" /> Remove File
+                                <Button type="button" variant="ghost" size="sm" onClick={clearFile} className="text-destructive">
+                                    <X className="mr-2 h-4 w-4" /> Remove
                                 </Button>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                                 <Upload className="h-12 w-12 text-muted-foreground" />
                                 <div className="text-center">
-                                    <p className="text-sm font-semibold">Click to upload blueprint</p>
-                                    <p className="text-xs text-muted-foreground">PDF, Image, or Word Document</p>
+                                    <p className="text-sm font-semibold">Click to upload document</p>
+                                    <p className="text-xs text-muted-foreground">PDF, JPG, PNG, or Word</p>
                                 </div>
                                 <Button type="button" variant="outline" size="sm">Select File</Button>
                             </div>
@@ -335,17 +415,14 @@ export function GenerateForm() {
                       name="blueprintText"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Extracted / Manual Blueprint Details</FormLabel>
+                          <FormLabel>Extracted Details (Editable)</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Instructions, section breakdown, or marking scheme..." 
+                              placeholder="Describe section breakdown, mark distribution, or specific instructions..." 
                               className="min-h-[150px]"
                               {...field} 
                             />
                           </FormControl>
-                          <FormDescription>
-                            This text will guide the AI in structuring the exam paper.
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -354,13 +431,13 @@ export function GenerateForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" size="lg" disabled={isGenerating || isExtracting}>
+            <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isGenerating || isExtracting}>
               {isGenerating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Sparkles className="mr-2 h-4 w-4" />
               )}
-              Generate Paper
+              Generate Professional Exam Paper
             </Button>
           </CardFooter>
         </form>
