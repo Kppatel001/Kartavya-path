@@ -3,15 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { getPapersForUser, deletePaper } from '@/lib/firebase/firestore';
+import { getPapersForUser } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, FileText, Calendar, Trash2, Loader2, ChevronRight } from 'lucide-react';
+import { PlusCircle, FileText, Calendar, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { gu } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
 
 function PaperHistorySkeleton() {
   return (
@@ -37,10 +36,8 @@ function PaperHistorySkeleton() {
 
 export default function HistoryPage() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [papers, setPapers] = useState<ExamPaper[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -52,36 +49,6 @@ export default function HistoryPage() {
         .catch(() => setLoading(false));
     }
   }, [user]);
-
-  const handleDelete = async (e: React.MouseEvent, paperId: string) => {
-    // Prevent the click from triggering parent events
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (deletingId) return;
-
-    const confirmed = typeof window !== 'undefined' && window.confirm('શું તમે આ પ્રશ્નપત્ર કાયમ માટે કાઢી નાખવા માંગો છો?');
-    if (!confirmed) return;
-
-    setDeletingId(paperId);
-    try {
-      await deletePaper(paperId);
-      setPapers(prev => prev.filter(p => p.id !== paperId));
-      toast({
-        title: 'સફળતા',
-        description: 'પ્રશ્નપત્ર સફળતાપૂર્વક કાઢી નાખવામાં આવ્યું છે.',
-      });
-    } catch (error: any) {
-      console.error("Delete error:", error);
-      toast({
-        variant: 'destructive',
-        title: 'ભૂલ',
-        description: error.message || 'પ્રશ્નપત્ર કાઢી નાખવામાં નિષ્ફળતા મળી.',
-      });
-    } finally {
-      setDeletingId(null);
-    }
-  };
 
   const formatDate = (paper: ExamPaper) => {
     if (!paper.createdAt) return 'હમણાં જ';
@@ -111,23 +78,7 @@ export default function HistoryPage() {
           {papers.map((paper) => (
             <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm relative group overflow-hidden">
               <CardHeader>
-                <div className="flex justify-between items-start gap-4">
-                  <CardTitle className="truncate text-lg leading-tight flex-1">{paper.title}</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    disabled={deletingId === paper.id}
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20 relative -top-1 -right-1"
-                    onClick={(e) => handleDelete(e, paper.id)}
-                    title="ડિલીટ કરો"
-                  >
-                    {deletingId === paper.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+                <CardTitle className="truncate text-lg leading-tight flex-1">{paper.title}</CardTitle>
                 <CardDescription className="flex items-center gap-1 mt-1">
                   <Calendar className="h-3 w-3" /> {formatDate(paper)}
                 </CardDescription>
