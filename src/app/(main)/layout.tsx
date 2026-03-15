@@ -74,6 +74,7 @@ export default function MainLayout({
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="નવું પેપર તૈયાર કરો" className="h-11">
                   <a href="/generate">
@@ -82,13 +83,15 @@ export default function MainLayout({
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="મારા પેપર્સ" className="h-11">
                   <a href="/history">
                     <History className="text-primary h-5 w-5" />
                     <span className="font-medium">મારા પેપર્સ</span>
                   </a>
-                </SidebarMenuItem>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               
               <div className="h-px bg-border/50 my-4 mx-2" />
               
@@ -134,7 +137,7 @@ export default function MainLayout({
         <main className="flex-1 bg-background text-foreground flex flex-col min-w-0">
           <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-6 no-print">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="lg:hidden">
+              <SidebarTrigger>
                 <Menu className="h-6 w-6 text-primary" />
               </SidebarTrigger>
               <div className="flex items-center gap-2">
