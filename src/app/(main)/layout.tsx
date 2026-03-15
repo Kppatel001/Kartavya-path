@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/user-nav';
+import { cn } from '@/lib/utils';
 import { 
   FilePlus2, 
   History, 
@@ -103,7 +104,7 @@ export default function MainLayout({
                     <GraduationCap className="text-green-500 h-5 w-5" />
                     <span className="font-medium">સ્માર્ટ ટ્યુટર</span>
                   </Link>
-                </SidebarMenuItem>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
