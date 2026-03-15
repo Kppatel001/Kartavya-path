@@ -8,6 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
@@ -170,7 +171,15 @@ export default function PaperPage() {
 
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
-      window.print();
+      try {
+        window.print();
+      } catch (e) {
+        toast({
+          variant: 'destructive',
+          title: 'પ્રિન્ટ એરર',
+          description: 'પ્રિન્ટિંગ સેવા શરૂ કરવામાં ભૂલ આવી છે.',
+        });
+      }
     }
   };
 
