@@ -109,7 +109,7 @@ export function GenerateForm() {
           form.setValue('blueprintText', result.extractedBlueprint);
           toast({
             title: 'બ્લુપ્રિન્ટ નિષ્કર્ષિત',
-            description: 'AI એ તમારા દસ્તાવેજનું સફળતાપૂર્વક વિશ્લેષણ કર્યું છે.',
+            description: 'તમારા દસ્તાવેજનું સફળતાપૂર્વક વિશ્લેષણ કરવામાં આવ્યું છે.',
           });
         } catch (error) {
           toast({
@@ -479,7 +479,7 @@ export function GenerateForm() {
                     <Sparkles className="h-5 w-5 text-primary" />
                     <h3 className="text-lg font-semibold">અભ્યાસક્રમ બ્લુપ્રિન્ટ (Blueprint)</h3>
                  </div>
-                 <p className="text-sm text-muted-foreground mb-6">સત્તાવાર GSEB બ્લુપ્રિન્ટ અથવા સિલેબસ દસ્તાવેજ અપલોડ કરો. AI પેપરના માળખાનું વિશ્લેષણ કરશે.</p>
+                 <p className="text-sm text-muted-foreground mb-6">સત્તાવાર GSEB બ્લુપ્રિન્ટ અથવા સિલેબસ દસ્તાવેજ અપલોડ કરો. સિસ્ટમ પેપરના માળખાનું વિશ્લેષણ કરશે.</p>
 
                  <div className="space-y-6">
                     <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-10 bg-muted/20 transition-colors hover:bg-muted/30">
@@ -493,7 +493,7 @@ export function GenerateForm() {
                         {isExtracting ? (
                             <div className="flex flex-col items-center gap-2">
                                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                                <p className="text-sm font-medium">AI દસ્તાવેજનું વિશ્લેષણ કરી રહ્યું છે...</p>
+                                <p className="text-sm font-medium">દસ્તાવેજનું વિશ્લેષણ કરવામાં આવી રહ્યું છે...</p>
                             </div>
                         ) : uploadedFile ? (
                             <div className="flex flex-col items-center gap-3">
@@ -543,9 +543,9 @@ export function GenerateForm() {
               {isGenerating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Sparkles className="mr-2 h-4 w-4" />
+                <FileText className="mr-2 h-4 w-4" />
               )}
-              AI દ્વારા પ્રશ્નપત્ર તૈયાર કરો
+              પ્રશ્નપત્ર તૈયાર કરો
             </Button>
           </CardFooter>
         </form>
