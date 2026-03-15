@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useRef } from 'react';
 import { getPaper, updatePaperContent } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,7 +9,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Printer, Save, Languages, RefreshCw, Pencil, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Loader2, 
+  Printer, 
+  Save, 
+  Languages, 
+  RefreshCw, 
+  Pencil, 
+  ChevronLeft, 
+  ChevronRight, 
+  Copy, 
+  Check, 
+  BrainCircuit, 
+  Send,
+  MessageCircle,
+  X
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +35,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -32,6 +47,9 @@ import { Label } from '@/components/ui/label';
 import { languages } from '@/lib/data';
 import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
 import { regenerateQuestion } from '@/ai/flows/regenerate-individual-questions';
+import { socraticTutor } from '@/ai/flows/socratic-tutor-flow';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 const LINES_PER_PAGE = 45;
 
@@ -41,20 +59,28 @@ export default function PaperPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  
   const [paper, setPaper] = useState<ExamPaper | null>(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSaving, startSavingTransition] = useTransition();
   const [isTranslating, startTranslationTransition] = useTransition();
   const [isRegenerating, startRegeneratingTransition] = useTransition();
+  const [isTutoring, setIsTutoring] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const [targetLanguage, setTargetLanguage] = useState(languages[1]);
+  const [targetLanguage, setTargetLanguage] = useState(languages[0]);
   const [questionToRegen, setQuestionToRegen] = useState("");
   
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Socratic Tutor State
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
+  const [currentQuery, setCurrentQuery] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const paginateContent = (text: string) => {
     const lines = text.split('\n');
@@ -80,7 +106,7 @@ export default function PaperPage() {
             setContent(fetchedPaper.content);
             paginateContent(fetchedPaper.content);
           } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Paper not found or access denied.' });
+            toast({ variant: 'destructive', title: 'ભૂલ', description: 'પેપર મળ્યું નથી.' });
             router.push('/history');
           }
           setLoading(false);
@@ -92,13 +118,19 @@ export default function PaperPage() {
     }
   }, [user, id, router, toast]);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
+
   const handleSave = () => {
     if (!id) return;
     startSavingTransition(async () => {
       await updatePaperContent(id, content);
       paginateContent(content);
       setIsEditing(false);
-      toast({ title: 'Success', description: 'Paper content saved successfully.' });
+      toast({ title: 'સફળતા', description: 'પ્રશ્નપત્ર સેવ થઈ ગયું છે.' });
     });
   };
 
@@ -110,7 +142,7 @@ export default function PaperPage() {
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
     setCopied(true);
-    toast({ title: 'Copied', description: 'Exam paper content copied to clipboard.' });
+    toast({ title: 'કોપી થયું', description: 'પ્રશ્નપત્ર ક્લિપબોર્ડમાં કોપી થઈ ગયું છે.' });
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -123,9 +155,9 @@ export default function PaperPage() {
         setContent(newContent);
         paginateContent(newContent);
         await updatePaperContent(id, newContent);
-        toast({ title: 'Translation Successful', description: `Paper translated to ${targetLanguage} and saved.` });
+        toast({ title: 'અનુવાદ સફળ', description: `પેપરનું ${targetLanguage}માં અનુવાદ થઈ ગયું છે.` });
       } catch (error) {
-        toast({ variant: 'destructive', title: 'Translation Failed', description: 'Could not translate the paper.' });
+        toast({ variant: 'destructive', title: 'ભૂલ', description: 'અનુવાદ નિષ્ફળ રહ્યો.' });
       }
     });
   };
@@ -142,27 +174,47 @@ export default function PaperPage() {
             question: questionToRegen,
             marks: 5
         });
-        const newContent = content + '\n\n--- Regenerated Question ---\n' + result.regeneratedQuestion;
+        const newContent = content + '\n\n--- નવો પ્રશ્ન ---\n' + result.regeneratedQuestion;
         setContent(newContent);
         paginateContent(newContent);
         await updatePaperContent(id, newContent);
         setQuestionToRegen("");
-        toast({ title: 'Question Regenerated', description: 'New question added and paper saved.' });
+        toast({ title: 'પ્રશ્ન બદલાયો', description: 'નવો પ્રશ્ન ઉમેરવામાં આવ્યો છે.' });
       } catch (error) {
-        toast({ variant: 'destructive', title: 'Regeneration Failed', description: 'Could not regenerate the question.' });
+        toast({ variant: 'destructive', title: 'ભૂલ', description: 'પ્રશ્ન બદલી શકાયો નથી.' });
       }
     });
   }
+
+  const handleTutorSubmit = async () => {
+    if (!paper || !currentQuery.trim() || isTutoring) return;
+    
+    const userMsg = { role: 'user' as const, text: currentQuery };
+    setChatMessages(prev => [...prev, userMsg]);
+    setCurrentQuery('');
+    setIsTutoring(true);
+
+    try {
+      const result = await socraticTutor({
+        subject: paper.settings.subject,
+        classLevel: paper.settings.classLevel,
+        question: content.slice(0, 500), // Passing start of paper as context
+        studentQuery: userMsg.text,
+        history: chatMessages
+      });
+      
+      setChatMessages(prev => [...prev, { role: 'model', text: result.response }]);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'ભૂલ', description: 'AI ટ્યુટર કનેક્ટ થઈ શક્યું નથી.' });
+    } finally {
+      setIsTutoring(false);
+    }
+  };
 
   if (loading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-1/4" />
-        <Skeleton className="h-8 w-1/2" />
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-10 w-24" />
-        </div>
         <Skeleton className="h-[60vh] w-full" />
       </div>
     );
@@ -175,77 +227,49 @@ export default function PaperPage() {
         {paper.settings.schoolLogo && (
             <img src={paper.settings.schoolLogo} alt="Logo" className="mx-auto h-16 w-auto mb-2 object-contain" />
         )}
-        <h2 className="text-2xl font-bold uppercase">{paper.settings.schoolName || 'EXAMINATION PAPER'}</h2>
-        <h3 className="text-lg font-semibold">{paper.settings.subject} - Class {paper.settings.classLevel}</h3>
+        <h2 className="text-2xl font-bold uppercase">{paper.settings.schoolName || 'પરીક્ષા પ્રશ્નપત્ર'}</h2>
+        <h3 className="text-lg font-semibold">{paper.settings.subject} - ધોરણ {paper.settings.classLevel}</h3>
         <p className="text-sm italic">{paper.settings.board}</p>
         <div className="mt-4 flex justify-between text-sm font-bold border-t border-black pt-2">
-            <div>TIME ALLOWED: {paper.settings.timeAllowed || '---'}</div>
-            <div>TOTAL MARKS: {paper.settings.totalMarks}</div>
+            <div>સમય: {paper.settings.timeAllowed || '---'}</div>
+            <div>કુલ ગુણ: {paper.settings.totalMarks}</div>
         </div>
         <div className="mt-2 grid grid-cols-2 gap-4 text-left border-t border-dashed border-black/30 pt-2 font-mono text-xs">
-            <div>Name: _________________________________</div>
-            <div>Roll No: __________________</div>
+            <div>નામ: _________________________________</div>
+            <div>રોલ નં: __________________</div>
         </div>
     </div>
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 relative">
       <style>{`
         @media print {
-          @page {
-            size: A4;
-            margin: 15mm;
-          }
-          body * { 
-            visibility: hidden; 
-            background: white !important;
-          }
-          .no-print, .no-print * { 
-            display: none !important; 
-          }
-          #printable-area, #printable-area * { 
-            visibility: visible; 
-          }
-          #printable-area { 
-            display: block !important;
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            color: black !important;
-          }
-          .printable-page { 
-            page-break-after: always; 
-            width: 100%;
-            margin-bottom: 20px;
-          }
-          pre {
-            white-space: pre-wrap !important;
-            word-wrap: break-word !important;
-            font-family: 'PT Sans', serif !important;
-            font-size: 11pt !important;
-            line-height: 1.5 !important;
-            color: black !important;
-          }
+          @page { size: A4; margin: 15mm; }
+          body * { visibility: hidden; background: white !important; }
+          .no-print, .no-print * { display: none !important; }
+          #printable-area, #printable-area * { visibility: visible; }
+          #printable-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
+          .printable-page { page-break-after: always; width: 100%; margin-bottom: 20px; }
+          pre { white-space: pre-wrap !important; word-wrap: break-word !important; font-family: 'PT Sans', serif !important; font-size: 11pt !important; line-height: 1.5 !important; color: black !important; }
         }
       `}</style>
       
       <div className="no-print">
         <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to History
+          <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
         </Button>
         <div className="flex justify-between items-start">
             <div>
                 <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
-                <p className="text-muted-foreground">Review and finalize your board-aligned paper.</p>
+                <Badge variant="secondary" className="mt-1 bg-primary/10 text-primary">GSEB બોર્ડ માળખું</Badge>
             </div>
             <div className="flex gap-2">
                 <Button variant="outline" size="icon" onClick={handleCopy}>
                     {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                 </Button>
-                <Button onClick={handlePrint}>
-                    <Printer className="mr-2 h-4 w-4" /> Print / Export PDF
+                <Button onClick={handlePrint} className="bg-primary hover:bg-primary/90">
+                    <Printer className="mr-2 h-4 w-4" /> પ્રિન્ટ / PDF
                 </Button>
             </div>
         </div>
@@ -256,50 +280,47 @@ export default function PaperPage() {
           <>
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Save Changes
+              સેવ કરો
             </Button>
             <Button variant="outline" onClick={() => {
               setIsEditing(false);
               setContent(paper.content);
               paginateContent(paper.content);
             }}>
-              Cancel
+              કેન્સલ
             </Button>
           </>
         ) : (
           <Button variant="outline" onClick={() => setIsEditing(true)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit Content
+            સુધારો કરો
           </Button>
         )}
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" disabled={isEditing}><Languages className="mr-2 h-4 w-4" /> Translate</Button>
+            <Button variant="outline" disabled={isEditing}><Languages className="mr-2 h-4 w-4" /> અનુવાદ</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Translate Paper</DialogTitle>
-              <DialogDescription>Select target language for translation.</DialogDescription>
+              <DialogTitle>અનુવાદ કરો</DialogTitle>
+              <DialogDescription>કઈ ભાષામાં અનુવાદ કરવા માંગો છો?</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="language" className="text-right">Language</Label>
-                <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="ભાષા પસંદ કરો" />
+                </SelectTrigger>
+                <SelectContent>
+                  {languages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <DialogClose asChild>
                 <Button onClick={handleTranslate} disabled={isTranslating}>
                   {isTranslating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Start Translation
+                  શરૂ કરો
                 </Button>
               </DialogClose>
             </DialogFooter>
@@ -308,16 +329,16 @@ export default function PaperPage() {
 
          <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" disabled={isEditing}><RefreshCw className="mr-2 h-4 w-4" /> Fix Question</Button>
+            <Button variant="outline" disabled={isEditing}><RefreshCw className="mr-2 h-4 w-4" /> પ્રશ્ન બદલો</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Regenerate Question</DialogTitle>
-              <DialogDescription>AI will rewrite the question while keeping the same marks and topic.</DialogDescription>
+              <DialogTitle>પ્રશ્ન બદલો (AI)</DialogTitle>
+              <DialogDescription>AI સમાન ગુણ અને ટોપિકનો નવો પ્રશ્ન તૈયાર કરશે.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <Textarea 
-                placeholder="Paste the question text here..."
+                placeholder="અહીં પ્રશ્ન પેસ્ટ કરો..."
                 value={questionToRegen}
                 onChange={(e) => setQuestionToRegen(e.target.value)}
                 rows={5}
@@ -327,12 +348,16 @@ export default function PaperPage() {
               <DialogClose asChild>
                 <Button onClick={handleRegenerate} disabled={isRegenerating || !questionToRegen}>
                   {isRegenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Regenerate
+                  નવો પ્રશ્ન બનાવો
                 </Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Button variant="accent" onClick={() => setChatOpen(true)} className="ml-auto">
+          <BrainCircuit className="mr-2 h-4 w-4" /> AI વિદ્યા ટ્યુટર
+        </Button>
       </div>
       
       {isEditing ? (
@@ -340,38 +365,96 @@ export default function PaperPage() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="min-h-[70vh] font-mono text-sm leading-relaxed p-6"
-          placeholder="Edit your exam paper here..."
         />
       ) : (
         <div className="space-y-4 no-print">
-          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden">
+          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative">
             <PaperHeader />
             <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
-              {pages[currentPage - 1] || 'No content found.'}
+              {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}
             </pre>
+            <div className="absolute bottom-4 right-8 text-xs text-black/50 italic">
+              પેજ {currentPage} / {pages.length}
+            </div>
           </div>
           {pages.length > 1 && (
             <div className="flex justify-center items-center gap-4">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                <ChevronLeft className="mr-2 h-4 w-4" /> Prev
+                <ChevronLeft className="mr-2 h-4 w-4" /> અગાઉનું
               </Button>
-              <span className="text-sm font-medium">Page {currentPage} of {pages.length}</span>
+              <span className="text-sm font-medium">પેજ {currentPage} of {pages.length}</span>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(pages.length, p + 1))} disabled={currentPage === pages.length}>
-                Next <ChevronRight className="ml-2 h-4 w-4" />
+                આગળનું <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           )}
         </div>
       )}
 
-      {/* Printable Area (Hidden on screen via Tailwind and visibility via CSS) */}
+      {/* Socratic Tutor Floating Chat */}
+      {chatOpen && (
+        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-card border-2 border-primary shadow-2xl rounded-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4">
+          <div className="p-4 border-b bg-primary text-primary-foreground flex justify-between items-center rounded-t-xl">
+            <div className="flex items-center gap-2">
+              <BrainCircuit className="h-5 w-5" />
+              <span className="font-bold">વિદ્યા AI ટ્યુટર</span>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setChatOpen(false)} className="hover:bg-primary-foreground/10">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              <div className="bg-muted p-3 rounded-lg text-sm leading-relaxed">
+                નમસ્તે! હું **વિદ્યા AI** છું. આ પ્રશ્નપત્રમાં તમને ક્યાંય મુશ્કેલી છે? મને પૂછો, હું તમને વિચારવામાં મદદ કરીશ!
+              </div>
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-xl text-sm ${
+                    msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border'
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {isTutoring && (
+                <div className="flex justify-start">
+                  <div className="bg-muted p-3 rounded-xl">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  </div>
+                </div>
+              )}
+              <div ref={scrollRef} />
+            </div>
+          </ScrollArea>
+          <div className="p-4 border-t flex gap-2">
+            <Textarea
+              value={currentQuery}
+              onChange={(e) => setCurrentQuery(e.target.value)}
+              placeholder="તમારો પ્રશ્ન અહીં લખો..."
+              className="min-h-[40px] max-h-[80px] text-xs"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleTutorSubmit();
+                }
+              }}
+            />
+            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring || !currentQuery.trim()} className="shrink-0">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Printable Area */}
       <div id="printable-area" className="hidden print:block">
         {pages.map((pageContent, index) => (
           <div key={index} className="printable-page">
               {index === 0 && <PaperHeader isPrint />}
               <pre className="whitespace-pre-wrap">{pageContent}</pre>
               <div className="mt-8 text-center text-[10pt] italic border-t pt-2 border-gray-300">
-                Generated by ExamSnap AI
+                ગુજરાત વિદ્યા AI દ્વારા તૈયાર કરેલ
               </div>
           </div>
         ))}
