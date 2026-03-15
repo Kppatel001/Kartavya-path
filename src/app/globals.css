@@ -46,7 +46,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body overflow-x-hidden;
   }
 }
 
@@ -54,6 +54,16 @@
   font-family: 'PT Sans', serif;
   line-height: 1.8;
   font-size: 1.15rem;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @media print {
@@ -124,5 +134,15 @@
   @page {
     margin: 2.5cm;
     size: A4;
+  }
+}
+
+/* Custom breakpoints and utility classes */
+@layer components {
+  .xs\:inline-flex {
+    @media (min-width: 480px) {
+      display: inline-flex;
+    }
+    display: none;
   }
 }
