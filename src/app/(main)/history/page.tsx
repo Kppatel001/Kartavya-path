@@ -8,14 +8,15 @@ import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, FileText } from 'lucide-react';
+import { PlusCircle, FileText, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { gu } from 'date-fns/locale';
 
 function PaperHistorySkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <Card key={i}>
+        <Card key={i} className="bg-card/50">
           <CardHeader>
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
@@ -49,14 +50,23 @@ export default function HistoryPage() {
     }
   }, [user]);
 
+  const formatDate = (paper: ExamPaper) => {
+    if (!paper.createdAt) return 'હમણાં જ';
+    try {
+        return format(paper.createdAt.toDate(), 'PPP', { locale: gu });
+    } catch (e) {
+        return 'તારીખ ઉપલબ્ધ નથી';
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight font-headline">
-          Paper History
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight font-headline text-white">
+          પ્રશ્નપત્ર ઇતિહાસ
         </h1>
-        <p className="text-muted-foreground">
-          View and manage your previously generated exam papers.
+        <p className="text-muted-foreground text-lg">
+          તમારા દ્વારા અત્યાર સુધી તૈયાર કરવામાં આવેલા તમામ પ્રશ્નપત્રો અહીં જોઈ શકાશે.
         </p>
       </div>
 
@@ -65,22 +75,24 @@ export default function HistoryPage() {
       ) : papers.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {papers.map((paper) => (
-            <Card key={paper.id}>
+            <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="truncate">{paper.title}</CardTitle>
-                <CardDescription>
-                  Created on {paper.createdAt ? format(paper.createdAt.toDate(), 'PPP') : 'N/A'}
+                <CardTitle className="truncate text-lg">{paper.title}</CardTitle>
+                <CardDescription className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" /> {formatDate(paper)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {paper.settings.chapters}
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  વિષય: {paper.settings.subject} • ધોરણ {paper.settings.classLevel}
+                  <br />
+                  પ્રકરણો: {paper.settings.chapters}
                 </p>
               </CardContent>
               <CardFooter>
-                <Button asChild>
+                <Button asChild variant="outline" className="w-full">
                   <Link href={`/paper/${paper.id}`}>
-                    <FileText className="mr-2 h-4 w-4" /> View Paper
+                    <FileText className="mr-2 h-4 w-4" /> પેપર જુઓ
                   </Link>
                 </Button>
               </CardFooter>
@@ -88,15 +100,16 @@ export default function HistoryPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 border-2 border-dashed rounded-lg">
-          <h2 className="text-xl font-semibold">No papers generated yet</h2>
+        <div className="text-center py-20 border-2 border-dashed border-border/50 rounded-xl bg-card/20">
+          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+          <h2 className="text-xl font-semibold">હજી સુધી કોઈ પેપર જનરેટ થયા નથી</h2>
           <p className="text-muted-foreground mt-2">
-            Start by creating your first exam paper.
+            નવું પ્રશ્નપત્ર બનાવીને તમારી તૈયારી શરૂ કરો.
           </p>
-          <Button asChild className="mt-4">
+          <Button asChild className="mt-6 shadow-xl" size="lg">
             <Link href="/generate">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Generate New Paper
+              નવું પેપર બનાવો
             </Link>
           </Button>
         </div>
