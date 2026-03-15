@@ -79,22 +79,137 @@ export const schoolsByDistrict: Record<string, string[]> = {
     "Udgam School for Children",
     "Nirma Vidyavihar",
     "Podar International School Ahmedabad",
-    "The New Tulip International School"
-  ],
-  "Vadodara (વડોદરા)": [
-    "Navrachana School Vadodara",
-    "Bright Day School",
-    "Baroda High School"
-  ],
-  "Rajkot (રાજકોટ)": [
-    "SN Kansagra School Rajkot",
-    "The Rajkumar College",
-    "Saint Mary's School"
+    "The New Tulip International School",
+    "Amrut High School",
+    "Ankur School",
+    "Asia English School",
+    "Best High School",
+    "C.N. Vidyalaya",
+    "Mount Carmel High School",
+    "Rachana School",
+    "Sardar Vallabhbhai Patel School",
+    "St. Xavier's High School Loyola",
+    "Vedant International School"
   ],
   "Surat (સુરત)": [
     "P.P. Savani School",
     "Gajera International School",
-    "S.D. Jain Modern School"
+    "S.D. Jain Modern School",
+    "Agrawal Vidya Vihar",
+    "Divine Child High School",
+    "Essar International School",
+    "L.P. Savani School",
+    "Metas Adventist School",
+    "Mount Merry School",
+    "Riverside School",
+    "Ryan International School Surat",
+    "Seventh Day Adventist School",
+    "St. Xavier's High School Surat",
+    "Tapti Valley International School"
+  ],
+  "Vadodara (વડોદરા)": [
+    "Navrachana School Vadodara",
+    "Bright Day School",
+    "Baroda High School",
+    "Anand Vidya Vihar",
+    "Basil School",
+    "Don Bosco High School",
+    "Green Valley School",
+    "Jeevan Sadhana School",
+    "Mesar School",
+    "New Era Senior Secondary School",
+    "Rosary High School",
+    "St. Basil's School",
+    "Tejas Vidyalaya",
+    "Vidyut Board Vidyalaya"
+  ],
+  "Rajkot (રાજકોટ)": [
+    "SN Kansagra School Rajkot",
+    "The Rajkumar College",
+    "Saint Mary's School",
+    "Christ School Rajkot",
+    "Dholakiya School",
+    "Galaxy School",
+    "Holy Star School",
+    "Modi School",
+    "Nirmala Convent School",
+    "Pathak School",
+    "Sarvodaya School",
+    "Shanti Asian School",
+    "Sunshine School",
+    "Virani High School"
+  ],
+  "Gandhinagar (ગાંધીનગર)": [
+    "Adani Public School",
+    "Delhi Public School Gandhinagar",
+    "Hillwoods School",
+    "Kadi School",
+    "Podar International School",
+    "Sainik School Balachadi",
+    "St. Xavier's High School Gandhinagar",
+    "Swaminarayan Dham School"
+  ],
+  "Bhavnagar (ભાવનગર)": [
+    "Alfred High School",
+    "B.M. Commerce High School",
+    "Fatima Convent High School",
+    "R.K. Gharshala",
+    "Silver Bells Public School",
+    "St. Mary's School Bhavnagar"
+  ],
+  "Jamnagar (જામનગર)": [
+    "Air Force School Jamnagar",
+    "Kendriya Vidyalaya",
+    "Kumar Shala",
+    "P.V. Modi School",
+    "St. Ann's High School",
+    "TATA Chemicals School"
+  ],
+  "Junagadh (જૂનાગઢ)": [
+    "Alpha School",
+    "Carmel Convent School",
+    "Gyanmanjari School",
+    "Noble Public School",
+    "St. Xavier's High School Junagadh"
+  ],
+  "Anand (આણંદ)": [
+    "Anandalaya",
+    "D.Z. Patel Higher Secondary School",
+    "Motibhai Amin High School",
+    "St. Mary's English Medium School",
+    "V.Z. Patel High School"
+  ],
+  "Mehsana (મહેસાણા)": [
+    "Ganpat University School",
+    "Holy Child School",
+    "Sardar Patel School",
+    "St. Joseph's School Mehsana",
+    "T.J. High School"
+  ],
+  "Bharuch (ભરૂચ)": [
+    "Amity High School",
+    "GNFC School",
+    "Narmada Vidyalaya",
+    "Queen of Angels Convent School",
+    "Shravan Vidyabhavan"
+  ],
+  "Navsari (નવસારી)": [
+    "Bai Dosibai Kotwal School",
+    "Dinbai Daboo High School",
+    "S.S. Agrawal Public School",
+    "The Navsari High School"
+  ],
+  "Valsad (વલસાડ)": [
+    "Atul Vidyalaya",
+    "Bai Avabai High School",
+    "Saraswati International School",
+    "St. Joseph's School Valsad"
+  ],
+  "Kutch (કચ્છ)": [
+    "Adani Public School Mundra",
+    "Mount Litera Zee School Bhuj",
+    "St. Mary's High School Gandhidham",
+    "The Bhuj Public School"
   ]
 };
 
