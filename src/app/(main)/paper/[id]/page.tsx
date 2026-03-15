@@ -13,15 +13,11 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
   Loader2, 
-  Printer, 
   Save, 
   Languages, 
-  RefreshCw, 
   Pencil, 
   ChevronLeft, 
   ChevronRight, 
-  Copy, 
-  Check, 
   BrainCircuit, 
   Send,
   X,
@@ -73,7 +69,6 @@ export default function PaperPage() {
   const [isRegenerating, startRegeneratingTransition] = useTransition();
   const [isTutoring, setIsTutoring] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
 
   const [targetLanguage, setTargetLanguage] = useState(languages[0]);
@@ -157,19 +152,6 @@ export default function PaperPage() {
       setIsEditing(false);
       toast({ title: 'સફળતા', description: 'પ્રશ્નપત્ર સેવ થઈ ગયું છે.' });
     });
-  };
-
-  const handlePrint = () => {
-    if (!content) return;
-    window.print();
-  };
-
-  const handleCopy = () => {
-    const visible = getVisibleContent(content, showAnswerKey);
-    navigator.clipboard.writeText(visible);
-    setCopied(true);
-    toast({ title: 'કોપી થયું', description: 'લખાણ ક્લિપબોર્ડમાં કોપી થઈ ગયું છે.' });
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleTranslate = () => {
@@ -285,8 +267,8 @@ export default function PaperPage() {
 
   if (!paper) return null;
 
-  const PaperHeader = ({ isPrint = false }) => (
-    <div className={`mb-8 border-b-2 border-black pb-4 text-center ${isPrint ? 'block' : ''}`}>
+  const PaperHeader = () => (
+    <div className="mb-8 border-b-2 border-black pb-4 text-center">
         {paper.settings.schoolLogo && (
             <img src={paper.settings.schoolLogo} alt="Logo" className="mx-auto h-16 w-auto mb-2 object-contain" />
         )}
@@ -306,19 +288,7 @@ export default function PaperPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
-      <style>{`
-        @media print {
-          @page { size: A4; margin: 15mm; }
-          body * { visibility: hidden; background: white !important; }
-          .no-print, .no-print * { display: none !important; }
-          #printable-area, #printable-area * { visibility: visible; }
-          #printable-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
-          .printable-page { page-break-after: always; width: 100%; margin-bottom: 20px; }
-          pre { white-space: pre-wrap !important; word-wrap: break-word !important; font-family: 'PT Sans', serif !important; font-size: 11pt !important; line-height: 1.5 !important; color: black !important; }
-        }
-      `}</style>
-      
-      <div className="no-print">
+      <div>
         <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
         </Button>
@@ -327,18 +297,10 @@ export default function PaperPage() {
                 <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
                 <Badge variant="secondary" className="mt-1 bg-primary/10 text-primary">GSEB બોર્ડ માળખું</Badge>
             </div>
-            <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handleCopy}>
-                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
-                <Button onClick={handlePrint} className="bg-primary hover:bg-primary/90">
-                    <Printer className="mr-2 h-4 w-4" /> પ્રિન્ટ / PDF
-                </Button>
-            </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 no-print">
+      <div className="flex flex-wrap gap-2">
         {isEditing ? (
           <>
             <Button onClick={handleSave} disabled={isSaving}>
@@ -417,7 +379,7 @@ export default function PaperPage() {
           className="min-h-[70vh] font-mono text-sm leading-relaxed p-6"
         />
       ) : (
-        <div className="space-y-4 no-print">
+        <div className="space-y-4">
           <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group">
             {currentPage === 1 && <PaperHeader />}
             <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
@@ -496,19 +458,6 @@ export default function PaperPage() {
           </div>
         </div>
       )}
-
-      {/* Printable Area */}
-      <div id="printable-area" className="hidden print:block">
-        {pages.map((pageContent, index) => (
-          <div key={index} className="printable-page">
-              {index === 0 && <PaperHeader isPrint />}
-              <pre className="whitespace-pre-wrap">{pageContent}</pre>
-              <div className="mt-8 text-center text-[10pt] italic border-t pt-2 border-gray-300">
-                ગુજરાત વિદ્યા AI દ્વારા તૈયાર કરેલ
-              </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
