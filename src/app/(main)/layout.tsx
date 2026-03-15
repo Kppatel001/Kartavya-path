@@ -58,7 +58,7 @@ export default function MainLayout({
               <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shrink-0">
                 <BrainCircuit className="h-6 w-6 text-white" />
               </div>
-              <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden whitespace-nowrap overflow-hidden text-ellipsis">વિદ્યા AI</span>
+              <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden whitespace-nowrap overflow-hidden text-ellipsis text-white">વિદ્યા AI</span>
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -87,7 +87,7 @@ export default function MainLayout({
                     <History className="text-primary h-5 w-5" />
                     <span className="font-medium">મારા પેપર્સ</span>
                   </a>
-                </SidebarMenuItem>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               
               <div className="h-px bg-border/50 my-4 mx-2" />
