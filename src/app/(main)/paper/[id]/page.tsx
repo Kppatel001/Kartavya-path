@@ -190,7 +190,9 @@ export default function PaperPage() {
       return;
     }
 
-    const textToSpeak = pages[currentPage - 1].slice(0, 500); 
+    const textToSpeak = pages[currentPage - 1]?.slice(0, 500) || ""; 
+    if (!textToSpeak) return;
+
     setIsSpeaking(true);
     try {
       const result = await gujaratiTTS({ text: textToSpeak });
