@@ -36,7 +36,7 @@ import {
   schoolsByDistrict 
 } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
-import { generateBoardAligned_ExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
+import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -147,7 +147,7 @@ export function GenerateForm() {
 
     setIsGenerating(true);
     try {
-      const result = await generateBoardAligned_ExamPaper({
+      const result = await generateBoardAlignedExamPaper({
         ...values,
         state: 'Gujarat'
       });
