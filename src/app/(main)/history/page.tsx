@@ -52,7 +52,10 @@ export default function HistoryPage() {
     }
   }, [user]);
 
-  const handleDelete = async (paperId: string) => {
+  const handleDelete = async (e: React.MouseEvent, paperId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!confirm('શું તમે આ પ્રશ્નપત્ર કાઢી નાખવા માંગો છો?')) return;
 
     try {
@@ -96,15 +99,15 @@ export default function HistoryPage() {
       ) : papers.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {papers.map((paper) => (
-            <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm relative group">
+            <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm relative group overflow-hidden">
               <CardHeader>
                 <div className="flex justify-between items-start gap-2">
                   <CardTitle className="truncate text-lg flex-1">{paper.title}</CardTitle>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                    onClick={() => handleDelete(paper.id)}
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20"
+                    onClick={(e) => handleDelete(e, paper.id)}
                     title="ડિલીટ કરો"
                   >
                     <Trash2 className="h-4 w-4" />
