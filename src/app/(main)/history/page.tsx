@@ -65,12 +65,14 @@ export default function HistoryPage() {
     setDeletingId(paperId);
     try {
       await deletePaper(paperId);
+      // Immediately update local state to reflect deletion
       setPapers(prev => prev.filter(p => p.id !== paperId));
       toast({
         title: 'સફળતા',
         description: 'પ્રશ્નપત્ર સફળતાપૂર્વક કાઢી નાખવામાં આવ્યું છે.',
       });
     } catch (error) {
+      console.error("Delete error:", error);
       toast({
         variant: 'destructive',
         title: 'ભૂલ',
@@ -84,7 +86,7 @@ export default function HistoryPage() {
   const formatDate = (paper: ExamPaper) => {
     if (!paper.createdAt) return 'હમણાં જ';
     try {
-        // Handle both Firestore Timestamp and Date object if converted
+        // Handle both Firestore Timestamp and Date object
         const date = typeof paper.createdAt.toDate === 'function' ? paper.createdAt.toDate() : new Date(paper.createdAt as any);
         return format(date, 'PPP', { locale: gu });
     } catch (e) {
@@ -111,12 +113,12 @@ export default function HistoryPage() {
             <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm relative group overflow-hidden">
               <CardHeader>
                 <div className="flex justify-between items-start gap-2">
-                  <CardTitle className="truncate text-lg flex-1">{paper.title}</CardTitle>
+                  <CardTitle className="truncate text-lg flex-1 leading-tight">{paper.title}</CardTitle>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     disabled={deletingId === paper.id}
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20 relative"
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20 relative -top-1 -right-1"
                     onClick={(e) => handleDelete(e, paper.id)}
                     title="ડિલીટ કરો"
                   >
