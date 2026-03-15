@@ -54,12 +54,14 @@ export default function HistoryPage() {
   }, [user]);
 
   const handleDelete = async (e: React.MouseEvent, paperId: string) => {
-    e.stopPropagation();
+    // Prevent the click from triggering parent events
     e.preventDefault();
+    e.stopPropagation();
     
     if (deletingId) return;
 
-    if (!confirm('શું તમે આ પ્રશ્નપત્ર કાયમ માટે કાઢી નાખવા માંગો છો?')) return;
+    const confirmed = typeof window !== 'undefined' && window.confirm('શું તમે આ પ્રશ્નપત્ર કાયમ માટે કાઢી નાખવા માંગો છો?');
+    if (!confirmed) return;
 
     setDeletingId(paperId);
     try {
@@ -69,12 +71,12 @@ export default function HistoryPage() {
         title: 'સફળતા',
         description: 'પ્રશ્નપત્ર સફળતાપૂર્વક કાઢી નાખવામાં આવ્યું છે.',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Delete error:", error);
       toast({
         variant: 'destructive',
         title: 'ભૂલ',
-        description: 'પ્રશ્નપત્ર કાઢી નાખવામાં નિષ્ફળતા મળી.',
+        description: error.message || 'પ્રશ્નપત્ર કાઢી નાખવામાં નિષ્ફળતા મળી.',
       });
     } finally {
       setDeletingId(null);
@@ -115,7 +117,7 @@ export default function HistoryPage() {
                     variant="ghost" 
                     size="icon" 
                     disabled={deletingId === paper.id}
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-10"
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20 relative -top-1 -right-1"
                     onClick={(e) => handleDelete(e, paper.id)}
                     title="ડિલીટ કરો"
                   >
