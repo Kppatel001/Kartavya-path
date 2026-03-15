@@ -58,11 +58,15 @@ The exam paper must:
 - Use terminology from GCERT/GSEB textbooks.
 - Provide clear questions for each section (MCQs, VSA, SA, LA).
 
-CRITICAL REQUIREMENT:
+CRITICAL REQUIREMENT FOR ANSWER KEY:
 At the very end of the paper, after all questions, add a section called "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---". 
-In this section, provide the correct answers for all the questions listed in the paper. For MCQs and VSA, provide the direct answer. For SA and LA, provide the key points or a brief solution hint.
 
-Output the complete paper as printable text, including the questions first, followed by the Answer Key section at the bottom.`,
+In this section, provide the correct answers for all questions. 
+- For MCQs and VSA (1 mark): Provide the direct correct option or answer.
+- For SA and LA (2, 3, 4, or 5 marks): Provide the solution **step-by-step**. The explanation or derivation must be proportional to the marks assigned. For higher marks, provide a detailed breakdown of steps or points.
+- Ensure the language of the Answer Key matches the paper's language (Gujarati).
+
+Output the complete paper as printable text, including the questions first, followed by the detailed Answer Key section at the bottom.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
