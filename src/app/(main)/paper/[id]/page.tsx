@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition, useRef } from 'react';
@@ -25,7 +26,9 @@ import {
   Send,
   X,
   Eye,
-  EyeOff
+  EyeOff,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import {
   Dialog,
@@ -48,6 +51,7 @@ import { languages } from '@/lib/data';
 import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
 import { regenerateQuestion } from '@/ai/flows/regenerate-individual-questions';
 import { socraticTutor } from '@/ai/flows/socratic-tutor-flow';
+import { gujaratiTTS } from '@/ai/flows/gujarati-tts-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 
@@ -68,6 +72,7 @@ export default function PaperPage() {
   const [isTranslating, startTranslationTransition] = useTransition();
   const [isRegenerating, startRegeneratingTransition] = useTransition();
   const [isTutoring, setIsTutoring] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
 
@@ -77,6 +82,8 @@ export default function PaperPage() {
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Socratic Tutor State
   const [chatOpen, setChatOpen] = useState(false);
@@ -195,7 +202,6 @@ export default function PaperPage() {
             marks: 5
         });
         
-        // Add new question before answer key if exists
         let newContent = "";
         if (content.includes(ANSWER_KEY_DELIMITER)) {
           const parts = content.split(ANSWER_KEY_DELIMITER);
@@ -215,6 +221,33 @@ export default function PaperPage() {
       }
     });
   }
+
+  const handleSpeakConcept = async () => {
+    if (isSpeaking) {
+      audioRef.current?.pause();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const textToSpeak = pages[currentPage - 1].slice(0, 500); 
+    setIsSpeaking(true);
+    try {
+      const result = await gujaratiTTS({ text: textToSpeak });
+      if (audioRef.current) {
+        audioRef.current.src = result.audioDataUri;
+        audioRef.current.play();
+        audioRef.current.onended = () => setIsSpeaking(false);
+      } else {
+        const audio = new Audio(result.audioDataUri);
+        audioRef.current = audio;
+        audio.play();
+        audio.onended = () => setIsSpeaking(false);
+      }
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'ભૂલ', description: 'અવાજ જનરેટ થઈ શક્યો નથી.' });
+      setIsSpeaking(false);
+    }
+  };
 
   const handleTutorSubmit = async () => {
     if (!paper || !currentQuery.trim() || isTutoring) return;
@@ -367,33 +400,10 @@ export default function PaperPage() {
           </DialogContent>
         </Dialog>
 
-         <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" disabled={isEditing}><RefreshCw className="mr-2 h-4 w-4" /> પ્રશ્ન બદલો</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>પ્રશ્ન બદલો (AI)</DialogTitle>
-              <DialogDescription>AI સમાન ગુણ અને ટોપિકનો નવો પ્રશ્ન તૈયાર કરશે.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Textarea 
-                placeholder="અહીં પ્રશ્ન પેસ્ટ કરો..."
-                value={questionToRegen}
-                onChange={(e) => setQuestionToRegen(e.target.value)}
-                rows={5}
-              />
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button onClick={handleRegenerate} disabled={isRegenerating || !questionToRegen}>
-                  {isRegenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  નવો પ્રશ્ન બનાવો
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button variant="secondary" onClick={handleSpeakConcept} disabled={isEditing}>
+          {isSpeaking ? <VolumeX className="mr-2 h-4 w-4" /> : <Volume2 className="mr-2 h-4 w-4" />}
+          {isSpeaking ? "અવાજ બંધ કરો" : "વિદ્યા AI સમજાવશે"}
+        </Button>
 
         <Button variant="secondary" onClick={() => setChatOpen(true)} className="ml-auto">
           <BrainCircuit className="mr-2 h-4 w-4" /> AI વિદ્યા ટ્યુટર
@@ -408,7 +418,7 @@ export default function PaperPage() {
         />
       ) : (
         <div className="space-y-4 no-print">
-          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative">
+          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group">
             {currentPage === 1 && <PaperHeader />}
             <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
               {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}

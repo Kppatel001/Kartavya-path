@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -7,7 +8,17 @@ import { useAuth } from '@/hooks/use-auth';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/user-nav';
-import { FilePlus2, History, Loader2, BookOpen, LayoutDashboard, BrainCircuit, ShieldCheck } from 'lucide-react';
+import { 
+  FilePlus2, 
+  History, 
+  Loader2, 
+  BookOpen, 
+  LayoutDashboard, 
+  BrainCircuit, 
+  ShieldCheck,
+  AlertCircle,
+  GraduationCap
+} from 'lucide-react';
 
 export default function MainLayout({
   children,
@@ -37,43 +48,62 @@ export default function MainLayout({
         <Sidebar collapsible="icon" className="bg-sidebar border-r border-border">
           <SidebarHeader>
             <div className="flex items-center gap-2 p-4">
-              <BrainCircuit className="h-8 w-8 text-primary" />
-              <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden">ગુજરાત વિદ્યા AI</span>
+              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+                <BrainCircuit className="h-6 w-6 text-white" />
+              </div>
+              <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden">વિદ્યા AI</span>
             </div>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarMenu>
+            <SidebarMenu className="px-2">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="ડેશબોર્ડ">
+                <SidebarMenuButton asChild tooltip="ડેશબોર્ડ" className="h-11">
                   <Link href="/dashboard">
-                    <LayoutDashboard className="text-primary" />
-                    <span>ડેશબોર્ડ</span>
+                    <LayoutDashboard className="text-primary h-5 w-5" />
+                    <span className="font-medium">ડેશબોર્ડ</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="નવું પેપર બનાવો">
+                <SidebarMenuButton asChild tooltip="નવું પેપર બનાવો" className="h-11">
                   <Link href="/generate">
-                    <FilePlus2 className="text-primary" />
-                    <span>નવું પેપર બનાવો</span>
+                    <FilePlus2 className="text-primary h-5 w-5" />
+                    <span className="font-medium">પેપર તૈયાર કરો</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="પેપર ઇતિહાસ">
+                <SidebarMenuButton asChild tooltip="પેપર ઇતિહાસ" className="h-11">
                   <Link href="/history">
-                    <History className="text-primary" />
-                    <span>પેપર ઇતિહાસ</span>
+                    <History className="text-primary h-5 w-5" />
+                    <span className="font-medium">પેપર ઇતિહાસ</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <div className="h-px bg-border/50 my-4 mx-2" />
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="ભૂલ ટ્રેકર" className="h-11">
+                  <Link href="/dashboard">
+                    <AlertCircle className="text-orange-500 h-5 w-5" />
+                    <span className="font-medium">ભૂલ ટ્રેકર</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="ફોકસ મોડ">
+                <SidebarMenuButton asChild tooltip="ફોકસ મોડ" className="h-11">
                   <Link href="/focus">
-                    <ShieldCheck className="text-accent" />
-                    <span>ફોકસ મોડ</span>
+                    <ShieldCheck className="text-accent h-5 w-5" />
+                    <span className="font-medium">ફોકસ મોડ</span>
                   </Link>
                 </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="સ્માર્ટ ટ્યુટર" className="h-11">
+                  <Link href="/dashboard">
+                    <GraduationCap className="text-green-500 h-5 w-5" />
+                    <span className="font-medium">સ્માર્ટ ટ્યુટર</span>
+                  </Link>
+                </SidebarMenuItem>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
@@ -81,16 +111,27 @@ export default function MainLayout({
 
         <main className="flex-1 bg-background text-foreground overflow-x-hidden">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b border-border bg-background/80 backdrop-blur-md px-6">
-            <div className="mr-auto hidden md:block">
-              <p className="text-sm font-medium text-muted-foreground">ગુજરાતના વિદ્યાર્થીઓ માટે પર્સનલાઈઝ્ડ AI ટ્યુટર</p>
+            <div className="mr-auto hidden lg:flex items-center gap-2">
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">STD 10</Badge>
+              <p className="text-sm font-medium text-muted-foreground">ગુજરાત વિદ્યા AI - શુદ્ધ ગુજરાતી લર્નિંગ</p>
             </div>
-            <UserNav />
+            <div className="flex items-center gap-4">
+              <UserNav />
+            </div>
           </header>
-          <div className="p-4 sm:p-6 lg:p-8">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
             {children}
           </div>
         </main>
       </div>
     </SidebarProvider>
   );
+}
+
+function Badge({ children, className, variant = "default" }: any) {
+    const variants = {
+        default: "bg-primary text-primary-foreground",
+        outline: "border border-border"
+    };
+    return <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase", variants[variant as keyof typeof variants], className)}>{children}</span>;
 }
