@@ -23,7 +23,6 @@ import {
   Check, 
   BrainCircuit, 
   Send,
-  MessageCircle,
   X
 } from 'lucide-react';
 import {
@@ -43,7 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { languages } from '@/lib/data';
 import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
 import { regenerateQuestion } from '@/ai/flows/regenerate-individual-questions';
@@ -355,7 +353,7 @@ export default function PaperPage() {
           </DialogContent>
         </Dialog>
 
-        <Button variant="accent" onClick={() => setChatOpen(true)} className="ml-auto">
+        <Button variant="secondary" onClick={() => setChatOpen(true)} className="ml-auto">
           <BrainCircuit className="mr-2 h-4 w-4" /> AI વિદ્યા ટ્યુટર
         </Button>
       </div>
@@ -369,7 +367,7 @@ export default function PaperPage() {
       ) : (
         <div className="space-y-4 no-print">
           <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative">
-            <PaperHeader />
+            {currentPage === 1 && <PaperHeader />}
             <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
               {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}
             </pre>
