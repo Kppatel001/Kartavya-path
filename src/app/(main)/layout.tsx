@@ -20,9 +20,9 @@ import {
   History, 
   Loader2, 
   LayoutDashboard, 
-  BrainCircuit, 
   ShieldCheck,
-  Menu
+  Menu,
+  BrainCircuit
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 

@@ -25,7 +25,6 @@ import {
   EyeOff,
   Volume2,
   VolumeX,
-  Printer,
   FileText
 } from 'lucide-react';
 import {
@@ -169,20 +168,6 @@ export default function PaperPage() {
     });
   };
 
-  const handlePrint = () => {
-    if (typeof window !== 'undefined') {
-      try {
-        window.print();
-      } catch (e) {
-        toast({
-          variant: 'destructive',
-          title: 'પ્રિન્ટ એરર',
-          description: 'પ્રિન્ટિંગ સેવા શરૂ કરવામાં ભૂલ આવી છે.',
-        });
-      }
-    }
-  };
-
   const handleSpeakConcept = async () => {
     if (isSpeaking) {
       audioRef.current?.pause();
@@ -272,14 +257,6 @@ export default function PaperPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
-      {/* Hidden container for printing the WHOLE content */}
-      <div className="hidden print:block print:bg-white print:p-0 print:m-0 print:text-black w-full">
-        <PaperHeader />
-        <pre className="whitespace-pre-wrap font-serif text-lg leading-loose text-black border-none bg-transparent p-0 m-0">
-          {getVisibleContent(content, showAnswerKey)}
-        </pre>
-      </div>
-
       <div className="no-print">
         <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
@@ -310,9 +287,6 @@ export default function PaperPage() {
           <>
             <Button variant="outline" onClick={() => setIsEditing(true)}>
               <Pencil className="mr-2 h-4 w-4" /> સુધારો
-            </Button>
-            <Button variant="default" onClick={handlePrint} className="bg-primary hover:bg-primary/90">
-              <Printer className="mr-2 h-4 w-4" /> પ્રિન્ટ કરો
             </Button>
           </>
         )}
