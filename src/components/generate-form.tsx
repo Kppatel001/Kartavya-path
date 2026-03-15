@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,7 +40,7 @@ import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, School, Search } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, Search } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
@@ -186,7 +186,6 @@ export function GenerateForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
-            {/* School Selection Section */}
             <div className="space-y-6">
               <div className="flex items-center gap-2 border-b border-border pb-2">
                 <MapPin className="h-5 w-5 text-primary" />
@@ -204,6 +203,7 @@ export function GenerateForm() {
                         field.onChange(val);
                         form.setValue('taluka', '');
                         form.setValue('schoolName', '');
+                        setCustomSchool(false);
                       }} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="જિલ્લો પસંદ કરો" /></SelectTrigger>
@@ -276,7 +276,7 @@ export function GenerateForm() {
                             {availableSchools.map((s) => (
                               <SelectItem key={s} value={s}>{s}</SelectItem>
                             ))}
-                            <SelectItem value="ADD_NEW" className="font-bold text-primary">
+                            <SelectItem value="ADD_NEW" className="font-bold text-primary flex items-center gap-2">
                               + મારી શાળા ઉમેરો
                             </SelectItem>
                           </SelectContent>
@@ -308,7 +308,6 @@ export function GenerateForm() {
               </div>
             </div>
 
-            {/* Exam Paper Details Section */}
             <div className="space-y-6 pt-4 border-t border-border">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
@@ -443,7 +442,6 @@ export function GenerateForm() {
               </div>
             </div>
 
-            {/* Blueprint Section */}
             <div className="border-t border-border pt-8">
                  <div className="flex items-center gap-2 mb-4">
                     <Sparkles className="h-5 w-5 text-primary" />

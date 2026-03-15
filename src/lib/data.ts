@@ -90,6 +90,11 @@ export const schoolsByDistrict: Record<string, string[]> = {
     "SN Kansagra School Rajkot",
     "The Rajkumar College",
     "Saint Mary's School"
+  ],
+  "Surat (સુરત)": [
+    "P.P. Savani School",
+    "Gajera International School",
+    "S.D. Jain Modern School"
   ]
 };
 
