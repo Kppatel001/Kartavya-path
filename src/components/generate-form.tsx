@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,11 +36,11 @@ import {
   schoolsByDistrict 
 } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
-import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
+import { generateBoardAligned_ExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, Plus } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
@@ -66,7 +66,7 @@ export function GenerateForm() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [schoolLogoDataUri, setSchoolLogoDataUri] = useState<string | null>(null);
-  const [customSchool, setCustomSchool] = useState(false);
+  const [isCustomSchoolMode, setIsCustomSchoolMode] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -147,12 +147,11 @@ export function GenerateForm() {
 
     setIsGenerating(true);
     try {
-      const result = await generateBoardAlignedExamPaper({
+      const result = await generateBoardAligned_ExamPaper({
         ...values,
         state: 'Gujarat'
       });
       
-      // Sanitizing the settings object to remove undefined values
       const paperSettings: ExamPaperSettings = {
         state: values.state,
         district: values.district,
@@ -218,7 +217,7 @@ export function GenerateForm() {
                         field.onChange(val);
                         form.setValue('taluka', '');
                         form.setValue('schoolName', '');
-                        setCustomSchool(false);
+                        setIsCustomSchoolMode(false);
                       }} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="જિલ્લો પસંદ કરો" /></SelectTrigger>
@@ -259,29 +258,44 @@ export function GenerateForm() {
                   control={form.control}
                   name="schoolName"
                   render={({ field }) => (
-                    <FormItem className="relative">
+                    <FormItem>
                       <FormLabel>શાળાનું નામ</FormLabel>
-                      {customSchool ? (
+                      {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
-                            <Input placeholder="શાળાનું નામ લખો" {...field} className="bg-background" />
+                            <Input 
+                              placeholder="તમારી શાળાનું નામ અહીં લખો" 
+                              {...field} 
+                              className="bg-background focus:ring-primary" 
+                              autoFocus
+                            />
                           </FormControl>
-                          <Button type="button" variant="ghost" size="icon" onClick={() => {
-                            setCustomSchool(false);
-                            form.setValue('schoolName', '');
-                          }}>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={() => {
+                              setIsCustomSchoolMode(false);
+                              form.setValue('schoolName', '');
+                            }}
+                            title="લિસ્ટ પર પાછા જાઓ"
+                          >
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
                       ) : (
-                        <Select onValueChange={(val) => {
-                          if (val === 'ADD_NEW') {
-                            setCustomSchool(true);
-                            form.setValue('schoolName', '');
-                          } else {
-                            field.onChange(val);
-                          }
-                        }} value={field.value} disabled={!selectedDistrict}>
+                        <Select 
+                          onValueChange={(val) => {
+                            if (val === 'ADD_NEW_SCHOOL_OPTION') {
+                              setIsCustomSchoolMode(true);
+                              form.setValue('schoolName', '');
+                            } else {
+                              field.onChange(val);
+                            }
+                          }} 
+                          value={field.value} 
+                          disabled={!selectedDistrict}
+                        >
                           <FormControl>
                             <SelectTrigger className="bg-background">
                               <SelectValue placeholder="શાળા પસંદ કરો" />
@@ -291,8 +305,11 @@ export function GenerateForm() {
                             {availableSchools.map((s) => (
                               <SelectItem key={s} value={s}>{s}</SelectItem>
                             ))}
-                            <SelectItem value="ADD_NEW" className="font-bold text-primary flex items-center gap-2">
-                              + મારી શાળા ઉમેરો
+                            <SelectItem 
+                              value="ADD_NEW_SCHOOL_OPTION" 
+                              className="font-bold text-primary flex items-center gap-2 border-t mt-1"
+                            >
+                              <Plus className="h-4 w-4 mr-2" /> મારી શાળા ઉમેરો
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -303,11 +320,11 @@ export function GenerateForm() {
                 />
 
                 <div className="flex flex-col gap-2">
-                    <FormLabel>શાળાનો લોગો</FormLabel>
+                    <FormLabel>શાળાનો લોગો (ઓપ્શનલ)</FormLabel>
                     <div className="flex items-center gap-4">
                         <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
                         {schoolLogoDataUri ? (
-                            <div className="relative h-10 w-10 border rounded overflow-hidden group">
+                            <div className="relative h-10 w-10 border rounded overflow-hidden group border-primary">
                                 <img src={schoolLogoDataUri} alt="Logo" className="h-full w-full object-contain" />
                                 <button type="button" onClick={() => setSchoolLogoDataUri(null)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                     <X className="h-4 w-4 text-white" />
@@ -315,7 +332,7 @@ export function GenerateForm() {
                             </div>
                         ) : (
                             <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} className="bg-background">
-                                <ImageIcon className="mr-2 h-4 w-4" /> લોગો
+                                <ImageIcon className="mr-2 h-4 w-4" /> લોગો ઉમેરો
                             </Button>
                         )}
                     </div>
