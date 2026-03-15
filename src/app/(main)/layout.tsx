@@ -3,7 +3,6 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { 
   SidebarProvider, 
@@ -24,7 +23,6 @@ import {
   LayoutDashboard, 
   BrainCircuit, 
   ShieldCheck,
-  AlertCircle,
   GraduationCap,
   BarChart3,
   Settings,
@@ -90,8 +88,7 @@ export default function MainLayout({
                     <History className="text-primary h-5 w-5" />
                     <span className="font-medium">મારા પેપર્સ</span>
                   </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                </SidebarMenuItem>
               
               <div className="h-px bg-border/50 my-4 mx-2" />
               
@@ -128,8 +125,9 @@ export default function MainLayout({
                     <Settings className="text-muted-foreground h-5 w-5" />
                     <span className="font-medium">સેટિંગ્સ</span>
                   </a>
-                </SidebarMenuItem>
-              </SidebarMenu>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </SidebarContent>
         </Sidebar>
 
