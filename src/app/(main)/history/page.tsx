@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { getPapersForUser } from '@/lib/firebase/firestore';
+import { getPapersForUser, deletePaper } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, FileText, Calendar } from 'lucide-react';
+import { PlusCircle, FileText, Calendar, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { gu } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 function PaperHistorySkeleton() {
   return (
@@ -36,6 +37,7 @@ function PaperHistorySkeleton() {
 
 export default function HistoryPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [papers, setPapers] = useState<ExamPaper[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,6 +51,25 @@ export default function HistoryPage() {
         .catch(() => setLoading(false));
     }
   }, [user]);
+
+  const handleDelete = async (paperId: string) => {
+    if (!confirm('શું તમે આ પ્રશ્નપત્ર કાઢી નાખવા માંગો છો?')) return;
+
+    try {
+      await deletePaper(paperId);
+      setPapers(papers.filter(p => p.id !== paperId));
+      toast({
+        title: 'સફળતા',
+        description: 'પ્રશ્નપત્ર સફળતાપૂર્વક કાઢી નાખવામાં આવ્યું છે.',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'ભૂલ',
+        description: 'પ્રશ્નપત્ર કાઢી નાખવામાં નિષ્ફળતા મળી.',
+      });
+    }
+  };
 
   const formatDate = (paper: ExamPaper) => {
     if (!paper.createdAt) return 'હમણાં જ';
@@ -75,9 +96,20 @@ export default function HistoryPage() {
       ) : papers.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {papers.map((paper) => (
-            <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm">
+            <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm relative group">
               <CardHeader>
-                <CardTitle className="truncate text-lg">{paper.title}</CardTitle>
+                <div className="flex justify-between items-start gap-2">
+                  <CardTitle className="truncate text-lg flex-1">{paper.title}</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    onClick={() => handleDelete(paper.id)}
+                    title="ડિલીટ કરો"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
                 <CardDescription className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" /> {formatDate(paper)}
                 </CardDescription>

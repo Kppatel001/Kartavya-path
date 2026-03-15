@@ -7,7 +7,8 @@ import {
   getDocs, 
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { ExamPaper, ExamPaperSettings } from '@/types';
@@ -39,8 +40,6 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
 export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
   if (!db) return [];
   
-  // કમ્પોઝિટ ઇન્ડેક્સની ભૂલ ટાળવા માટે અહીંથી orderBy હટાવ્યું છે.
-  // આપણે નીચે જાવાસ્ક્રિપ્ટ દ્વારા સોર્ટિંગ કરીશું.
   const q = query(collection(db, papersCollection), where("userId", "==", userId));
   
   try {
@@ -50,7 +49,6 @@ export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
       papers.push({ id: doc.id, ...doc.data() } as ExamPaper);
     });
     
-    // ઇન-મેમરી સોર્ટિંગ: નવા પેપર પહેલા આવશે
     return papers.sort((a, b) => {
       const dateA = a.createdAt?.toMillis() || 0;
       const dateB = b.createdAt?.toMillis() || 0;
@@ -79,4 +77,10 @@ export async function updatePaperContent(paperId: string, content: string): Prom
   if (!db) return;
   const docRef = doc(db, papersCollection, paperId);
   await updateDoc(docRef, { content });
+}
+
+export async function deletePaper(paperId: string): Promise<void> {
+  if (!db) return;
+  const docRef = doc(db, papersCollection, paperId);
+  await deleteDoc(docRef);
 }
