@@ -8,7 +8,7 @@ import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, FileText, Calendar, Trash2, Loader2 } from 'lucide-react';
+import { PlusCircle, FileText, Calendar, Trash2, Loader2, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { gu } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -54,7 +54,7 @@ export default function HistoryPage() {
   }, [user]);
 
   const handleDelete = async (e: React.MouseEvent, paperId: string) => {
-    // Prevent any parent link or card click events
+    // Prevent any parent click events
     e.preventDefault();
     e.stopPropagation();
     
@@ -86,7 +86,6 @@ export default function HistoryPage() {
   const formatDate = (paper: ExamPaper) => {
     if (!paper.createdAt) return 'હમણાં જ';
     try {
-        // Handle both Firestore Timestamp and Date object
         const date = typeof paper.createdAt.toDate === 'function' ? paper.createdAt.toDate() : new Date(paper.createdAt as any);
         return format(date, 'PPP', { locale: gu });
     } catch (e) {
@@ -111,39 +110,42 @@ export default function HistoryPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {papers.map((paper) => (
             <Card key={paper.id} className="border-border/50 hover:border-primary/50 transition-colors shadow-lg bg-card/40 backdrop-blur-sm relative group overflow-hidden">
-              <CardHeader>
-                <div className="flex justify-between items-start gap-2">
-                  <CardTitle className="truncate text-lg flex-1 leading-tight">{paper.title}</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    disabled={deletingId === paper.id}
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20 relative -top-1 -right-1"
-                    onClick={(e) => handleDelete(e, paper.id)}
-                    title="ડિલીટ કરો"
-                  >
-                    {deletingId === paper.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
+              <CardHeader className="relative">
+                <div className="flex justify-between items-start pr-8">
+                  <CardTitle className="truncate text-lg leading-tight w-full">{paper.title}</CardTitle>
                 </div>
-                <CardDescription className="flex items-center gap-1">
+                <CardDescription className="flex items-center gap-1 mt-1">
                   <Calendar className="h-3 w-3" /> {formatDate(paper)}
                 </CardDescription>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  disabled={deletingId === paper.id}
+                  className="absolute top-4 right-4 h-8 w-8 text-destructive hover:bg-destructive/10 z-30"
+                  onClick={(e) => handleDelete(e, paper.id)}
+                  title="ડિલીટ કરો"
+                >
+                  {deletingId === paper.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </Button>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  વિષય: {paper.settings.subject} • ધોરણ {paper.settings.classLevel}
-                  <br />
-                  પ્રકરણો: {paper.settings.chapters}
-                </p>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p className="font-medium text-white/80">{paper.settings.subject}</p>
+                  <p>ધોરણ {paper.settings.classLevel} • {paper.settings.totalMarks} ગુણ</p>
+                  <p className="line-clamp-1 text-xs italic">પ્રકરણો: {paper.settings.chapters}</p>
+                </div>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="outline" className="w-full">
+                <Button asChild variant="outline" className="w-full group/btn">
                   <Link href={`/paper/${paper.id}`}>
-                    <FileText className="mr-2 h-4 w-4" /> પેપર જુઓ
+                    <FileText className="mr-2 h-4 w-4 text-primary" /> 
+                    પેપર જુઓ
+                    <ChevronRight className="ml-auto h-4 w-4 opacity-50 group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
               </CardFooter>

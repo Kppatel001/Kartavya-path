@@ -49,6 +49,7 @@ export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
       papers.push({ id: doc.id, ...doc.data() } as ExamPaper);
     });
     
+    // Sort client-side to avoid requiring composite indexes immediately
     return papers.sort((a, b) => {
       const dateA = a.createdAt?.toMillis() || 0;
       const dateB = b.createdAt?.toMillis() || 0;
@@ -63,12 +64,14 @@ export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
 export async function getPaper(paperId: string): Promise<ExamPaper | null> {
   if (!db) return null;
   const docRef = doc(db, papersCollection, paperId);
-  const docSnap = await getDoc(docRef);
-
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as ExamPaper;
-  } else {
-    console.log("No such document!");
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as ExamPaper;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting paper:", error);
     return null;
   }
 }
@@ -76,11 +79,21 @@ export async function getPaper(paperId: string): Promise<ExamPaper | null> {
 export async function updatePaperContent(paperId: string, content: string): Promise<void> {
   if (!db) return;
   const docRef = doc(db, papersCollection, paperId);
-  await updateDoc(docRef, { content });
+  try {
+    await updateDoc(docRef, { content });
+  } catch (error) {
+    console.error("Error updating paper:", error);
+    throw error;
+  }
 }
 
 export async function deletePaper(paperId: string): Promise<void> {
   if (!db) return;
   const docRef = doc(db, papersCollection, paperId);
-  await deleteDoc(docRef);
+  try {
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting paper:", error);
+    throw error;
+  }
 }
