@@ -169,7 +169,9 @@ export default function PaperPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
   };
 
   const handleSpeakConcept = async () => {
@@ -256,6 +258,14 @@ export default function PaperPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
+      {/* Hidden container for printing the WHOLE content */}
+      <div className="hidden print:block print:bg-white print:p-0 print:m-0 print:text-black">
+        <PaperHeader />
+        <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
+          {getVisibleContent(content, showAnswerKey)}
+        </pre>
+      </div>
+
       <div className="no-print">
         <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
@@ -350,21 +360,21 @@ export default function PaperPage() {
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6 no-print"
+          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6 no-print bg-background border-border"
         />
       ) : (
-        <div className="space-y-4">
-          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group print-content">
-            {(currentPage === 1 || typeof window !== 'undefined') && <PaperHeader />}
+        <div className="space-y-4 no-print">
+          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group">
+            {currentPage === 1 && <PaperHeader />}
             <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
               {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}
             </pre>
-            <div className="absolute bottom-4 right-8 text-xs text-black/50 italic no-print">
+            <div className="absolute bottom-4 right-8 text-xs text-black/50 italic">
               પેજ {currentPage} / {pages.length}
             </div>
           </div>
           {pages.length > 1 && (
-            <div className="flex justify-center items-center gap-4 no-print">
+            <div className="flex justify-center items-center gap-4">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> અગાઉનું
               </Button>

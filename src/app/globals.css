@@ -56,7 +56,9 @@
   nav, 
   button, 
   [data-sidebar="sidebar"],
-  .sidebar-trigger {
+  .sidebar-trigger,
+  [role="dialog"],
+  .fixed {
     display: none !important;
   }
   
@@ -65,30 +67,30 @@
     color: black !important;
     padding: 0 !important;
     margin: 0 !important;
+    overflow: visible !important;
   }
   
   main {
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
-  }
-
-  .print-content {
     background-color: white !important;
-    color: black !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    min-height: auto !important;
   }
 
   pre {
     color: black !important;
     font-size: 12pt !important;
     white-space: pre-wrap !important;
+    font-family: serif !important;
+    line-height: 1.6 !important;
   }
   
   .badge {
     display: none !important;
+  }
+
+  /* Force hidden container to show only on print */
+  .hidden.print\:block {
+    display: block !important;
   }
 }
