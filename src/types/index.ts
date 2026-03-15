@@ -3,6 +3,8 @@ import type { Timestamp } from 'firebase/firestore';
 
 export type ExamPaperSettings = {
   state: string;
+  district: string;
+  taluka?: string;
   board: string;
   classLevel: string;
   subject: string;
@@ -22,4 +24,19 @@ export type ExamPaper = {
   settings: ExamPaperSettings;
   content: string;
   createdAt: Timestamp;
+};
+
+export type StudentMastery = {
+  id: string;
+  userId: string;
+  subject: string;
+  progress: number;
+  lastUpdated: Timestamp;
+};
+
+export type FocusSession = {
+  id: string;
+  userId: string;
+  durationMinutes: number;
+  completedAt: Timestamp;
 };
