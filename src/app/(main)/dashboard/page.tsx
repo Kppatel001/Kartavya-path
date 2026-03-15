@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -63,7 +62,7 @@ export default function DashboardPage() {
           નમસ્તે, {user?.displayName || 'વિદ્યાર્થી'} 👋
         </h1>
         <p className="text-muted-foreground text-lg">
-          તમારી પ્રગતિ અને 'વિદ્યા AI' ના સ્માર્ટ વિશ્લેષણ અહીં જોઈ શકાશે.
+          તમારી પ્રગતિ અને 'વિદ્યા' ના સ્માર્ટ વિશ્લેષણ અહીં જોઈ શકાશે.
         </p>
       </div>
 
@@ -105,7 +104,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">920</div>
-            <p className="text-xs text-muted-foreground mt-1">તાર્કિક શક્તિ (AI Metrics)</p>
+            <p className="text-xs text-muted-foreground mt-1">તાર્કિક શક્તિ (વિશ્લેષણ)</p>
           </CardContent>
         </Card>
       </div>
@@ -150,7 +149,7 @@ export default function DashboardPage() {
               <AlertCircle className="h-5 w-5" />
               નબળા ટોપિક્સ (Weak Topics)
             </CardTitle>
-            <CardDescription>AI દ્વારા ઓળખવામાં આવેલ સુધારણાના વિસ્તારો</CardDescription>
+            <CardDescription>વિશ્લેષણ દ્વારા ઓળખવામાં આવેલ સુધારણાના વિસ્તારો</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {weakTopics.map((item, idx) => (
@@ -222,7 +221,7 @@ export default function DashboardPage() {
             <Zap className="h-32 w-32 text-primary" />
           </div>
           <CardHeader>
-            <CardTitle className="text-xl">વિદ્યા AI સાથે રિવિઝન</CardTitle>
+            <CardTitle className="text-xl">વિદ્યા સાથે રિવિઝન</CardTitle>
             <CardDescription>તમારી ભૂલોમાંથી શીખો અને યાદશક્તિ વધારો</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -232,7 +231,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h4 className="font-bold text-sm">ભૂલ ટ્રેકર (Mistake Tracker)</h4>
-                <p className="text-xs text-muted-foreground">તમારા ૨૪ ખોટા પડેલા પ્રશ્નોનું AI વિશ્લેષણ તૈયાર છે.</p>
+                <p className="text-xs text-muted-foreground">તમારા ૨૪ ખોટા પડેલા પ્રશ્નોનું વિશ્લેષણ તૈયાર છે.</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -244,7 +243,7 @@ export default function DashboardPage() {
               </Button>
             </div>
             <p className="text-[10px] text-center text-muted-foreground italic">
-              "AI વિશ્લેષણ મુજબ, રિવિઝન ક્વિઝ લેવાથી યાદ રાખવાની ક્ષમતા ૩૫% વધે છે."
+              "વિશ્લેષણ મુજબ, રિવિઝન ક્વિઝ લેવાથી યાદ રાખવાની ક્ષમતા ૩૫% વધે છે."
             </p>
           </CardContent>
         </Card>

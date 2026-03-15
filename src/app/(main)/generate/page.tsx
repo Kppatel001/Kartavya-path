@@ -8,7 +8,7 @@ export default function GeneratePage() {
           નવું પ્રશ્નપત્ર તૈયાર કરો
         </h1>
         <p className="text-muted-foreground text-lg">
-          AI ની મદદથી સેકન્ડોમાં GSEB અભ્યાસક્રમ મુજબનું પ્રશ્નપત્ર બનાવો.
+          સેકન્ડોમાં GSEB અભ્યાસક્રમ મુજબનું પ્રશ્નપત્ર બનાવો.
         </p>
       </div>
       <GenerateForm />

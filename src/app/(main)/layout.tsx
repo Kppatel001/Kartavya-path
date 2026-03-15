@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge';
 export default function MainLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.Node;
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -111,7 +111,7 @@ export default function MainLayout({
               </SidebarTrigger>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn("border-primary/20 bg-primary/5 text-primary hidden xs:inline-flex")}>GSEB STD 10</Badge>
-                <p className="text-sm font-bold text-foreground truncate max-w-[150px] sm:max-w-none">કર્તવ્ય પથ AI</p>
+                <p className="text-sm font-bold text-foreground truncate max-w-[150px] sm:max-w-none">કર્તવ્ય પથ</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
