@@ -37,7 +37,6 @@
   .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
-    /* ... rest matches root for deep focus midnight blue ... */
   }
 }
 
@@ -47,5 +46,49 @@
   }
   body {
     @apply bg-background text-foreground font-body;
+  }
+}
+
+@media print {
+  .no-print, 
+  header, 
+  aside, 
+  nav, 
+  button, 
+  [data-sidebar="sidebar"],
+  .sidebar-trigger {
+    display: none !important;
+  }
+  
+  body {
+    background-color: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .print-content {
+    background-color: white !important;
+    color: black !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  pre {
+    color: black !important;
+    font-size: 12pt !important;
+    white-space: pre-wrap !important;
+  }
+  
+  .badge {
+    display: none !important;
   }
 }

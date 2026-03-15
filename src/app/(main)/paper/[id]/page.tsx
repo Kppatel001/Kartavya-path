@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition, useRef } from 'react';
@@ -24,7 +23,9 @@ import {
   Eye,
   EyeOff,
   Volume2,
-  VolumeX
+  VolumeX,
+  Printer,
+  Share2
 } from 'lucide-react';
 import {
   Dialog,
@@ -45,7 +46,6 @@ import {
 } from '@/components/ui/select';
 import { languages } from '@/lib/data';
 import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
-import { regenerateQuestion } from '@/ai/flows/regenerate-individual-questions';
 import { socraticTutor } from '@/ai/flows/socratic-tutor-flow';
 import { gujaratiTTS } from '@/ai/flows/gujarati-tts-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -66,13 +66,11 @@ export default function PaperPage() {
   const [loading, setLoading] = useState(true);
   const [isSaving, startSavingTransition] = useTransition();
   const [isTranslating, startTranslationTransition] = useTransition();
-  const [isRegenerating, startRegeneratingTransition] = useTransition();
   const [isTutoring, setIsTutoring] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
 
   const [targetLanguage, setTargetLanguage] = useState(languages[0]);
-  const [questionToRegen, setQuestionToRegen] = useState("");
   
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -129,7 +127,6 @@ export default function PaperPage() {
     }
   }, [user, id, router, toast]);
 
-  // Re-paginate when showAnswerKey toggle changes
   useEffect(() => {
     if (content) {
       const visible = getVisibleContent(content, showAnswerKey);
@@ -170,39 +167,10 @@ export default function PaperPage() {
       }
     });
   };
-  
-  const handleRegenerate = () => {
-    if(!paper || isRegenerating) return;
-    startRegeneratingTransition(async () => {
-      try {
-        const result = await regenerateQuestion({
-            board: paper.settings.board,
-            classLevel: paper.settings.classLevel,
-            subject: paper.settings.subject,
-            chapter: paper.settings.chapters.split(',')[0].trim(),
-            question: questionToRegen,
-            marks: 5
-        });
-        
-        let newContent = "";
-        if (content.includes(ANSWER_KEY_DELIMITER)) {
-          const parts = content.split(ANSWER_KEY_DELIMITER);
-          newContent = parts[0] + '\n\n--- નવો પ્રશ્ન ---\n' + result.regeneratedQuestion + '\n\n' + ANSWER_KEY_DELIMITER + parts[1];
-        } else {
-          newContent = content + '\n\n--- નવો પ્રશ્ન ---\n' + result.regeneratedQuestion;
-        }
 
-        setContent(newContent);
-        const visible = getVisibleContent(newContent, showAnswerKey);
-        paginateContent(visible);
-        await updatePaperContent(id, newContent);
-        setQuestionToRegen("");
-        toast({ title: 'પ્રશ્ન બદલાયો', description: 'નવો પ્રશ્ન ઉમેરવામાં આવ્યો છે.' });
-      } catch (error) {
-        toast({ variant: 'destructive', title: 'ભૂલ', description: 'પ્રશ્ન બદલી શકાયો નથી.' });
-      }
-    });
-  }
+  const handlePrint = () => {
+    window.print();
+  };
 
   const handleSpeakConcept = async () => {
     if (isSpeaking) {
@@ -288,7 +256,7 @@ export default function PaperPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
-      <div>
+      <div className="no-print">
         <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
         </Button>
@@ -300,7 +268,7 @@ export default function PaperPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 no-print">
         {isEditing ? (
           <>
             <Button onClick={handleSave} disabled={isSaving}>
@@ -317,10 +285,16 @@ export default function PaperPage() {
             </Button>
           </>
         ) : (
-          <Button variant="outline" onClick={() => setIsEditing(true)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            સુધારો કરો
-          </Button>
+          <>
+            <Button variant="outline" onClick={() => setIsEditing(true)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              સુધારો કરો
+            </Button>
+            <Button variant="default" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              પ્રિન્ટ કરો
+            </Button>
+          </>
         )}
 
         <Button 
@@ -376,21 +350,21 @@ export default function PaperPage() {
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6"
+          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6 no-print"
         />
       ) : (
         <div className="space-y-4">
-          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group">
-            {currentPage === 1 && <PaperHeader />}
+          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group print-content">
+            {(currentPage === 1 || typeof window !== 'undefined') && <PaperHeader />}
             <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
               {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}
             </pre>
-            <div className="absolute bottom-4 right-8 text-xs text-black/50 italic">
+            <div className="absolute bottom-4 right-8 text-xs text-black/50 italic no-print">
               પેજ {currentPage} / {pages.length}
             </div>
           </div>
           {pages.length > 1 && (
-            <div className="flex justify-center items-center gap-4">
+            <div className="flex justify-center items-center gap-4 no-print">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> અગાઉનું
               </Button>
@@ -405,7 +379,7 @@ export default function PaperPage() {
 
       {/* Socratic Tutor Floating Chat */}
       {chatOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-card border-2 border-primary shadow-2xl rounded-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4">
+        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-card border-2 border-primary shadow-2xl rounded-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4 no-print">
           <div className="p-4 border-b bg-primary text-primary-foreground flex justify-between items-center rounded-t-xl">
             <div className="flex items-center gap-2">
               <BrainCircuit className="h-5 w-5" />
