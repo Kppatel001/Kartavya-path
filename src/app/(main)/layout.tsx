@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -23,7 +24,6 @@ import {
   BrainCircuit, 
   ShieldCheck,
   GraduationCap,
-  BarChart3,
   Settings,
   Menu
 } from 'lucide-react';
@@ -93,15 +93,6 @@ export default function MainLayout({
               </SidebarMenuItem>
               
               <div className="h-px bg-border/50 my-4 mx-2" />
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="પ્રગતિ વિશ્લેષણ" className="h-11">
-                  <a href="/dashboard">
-                    <BarChart3 className="text-purple-500 h-5 w-5" />
-                    <span className="font-medium">પ્રગતિ વિશ્લેષણ</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="ફોકસ મોડ" className="h-11">
