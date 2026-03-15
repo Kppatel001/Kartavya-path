@@ -23,7 +23,9 @@ import {
   Check, 
   BrainCircuit, 
   Send,
-  X
+  X,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import {
   Dialog,
@@ -50,6 +52,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 
 const LINES_PER_PAGE = 45;
+const ANSWER_KEY_DELIMITER = "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---";
 
 export default function PaperPage() {
   const params = useParams();
@@ -66,6 +69,7 @@ export default function PaperPage() {
   const [isRegenerating, startRegeneratingTransition] = useTransition();
   const [isTutoring, setIsTutoring] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showAnswerKey, setShowAnswerKey] = useState(false);
 
   const [targetLanguage, setTargetLanguage] = useState(languages[0]);
   const [questionToRegen, setQuestionToRegen] = useState("");
@@ -79,6 +83,12 @@ export default function PaperPage() {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const getVisibleContent = (rawContent: string, showKey: boolean) => {
+    if (!rawContent.includes(ANSWER_KEY_DELIMITER)) return rawContent;
+    if (showKey) return rawContent;
+    return rawContent.split(ANSWER_KEY_DELIMITER)[0].trim();
+  };
 
   const paginateContent = (text: string) => {
     const lines = text.split('\n');
@@ -102,7 +112,8 @@ export default function PaperPage() {
           if (fetchedPaper && fetchedPaper.userId === user.uid) {
             setPaper(fetchedPaper);
             setContent(fetchedPaper.content);
-            paginateContent(fetchedPaper.content);
+            const visible = getVisibleContent(fetchedPaper.content, showAnswerKey);
+            paginateContent(visible);
           } else {
             toast({ variant: 'destructive', title: 'ભૂલ', description: 'પેપર મળ્યું નથી.' });
             router.push('/history');
@@ -116,6 +127,14 @@ export default function PaperPage() {
     }
   }, [user, id, router, toast]);
 
+  // Re-paginate when showAnswerKey toggle changes
+  useEffect(() => {
+    if (content) {
+      const visible = getVisibleContent(content, showAnswerKey);
+      paginateContent(visible);
+    }
+  }, [showAnswerKey, content]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -126,7 +145,8 @@ export default function PaperPage() {
     if (!id) return;
     startSavingTransition(async () => {
       await updatePaperContent(id, content);
-      paginateContent(content);
+      const visible = getVisibleContent(content, showAnswerKey);
+      paginateContent(visible);
       setIsEditing(false);
       toast({ title: 'સફળતા', description: 'પ્રશ્નપત્ર સેવ થઈ ગયું છે.' });
     });
@@ -138,9 +158,10 @@ export default function PaperPage() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+    const visible = getVisibleContent(content, showAnswerKey);
+    navigator.clipboard.writeText(visible);
     setCopied(true);
-    toast({ title: 'કોપી થયું', description: 'પ્રશ્નપત્ર ક્લિપબોર્ડમાં કોપી થઈ ગયું છે.' });
+    toast({ title: 'કોપી થયું', description: 'લખાણ ક્લિપબોર્ડમાં કોપી થઈ ગયું છે.' });
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -151,7 +172,8 @@ export default function PaperPage() {
         const result = await translateExamPaper({ examPaper: content, targetLanguage });
         const newContent = result.translatedExamPaper;
         setContent(newContent);
-        paginateContent(newContent);
+        const visible = getVisibleContent(newContent, showAnswerKey);
+        paginateContent(visible);
         await updatePaperContent(id, newContent);
         toast({ title: 'અનુવાદ સફળ', description: `પેપરનું ${targetLanguage}માં અનુવાદ થઈ ગયું છે.` });
       } catch (error) {
@@ -172,9 +194,19 @@ export default function PaperPage() {
             question: questionToRegen,
             marks: 5
         });
-        const newContent = content + '\n\n--- નવો પ્રશ્ન ---\n' + result.regeneratedQuestion;
+        
+        // Add new question before answer key if exists
+        let newContent = "";
+        if (content.includes(ANSWER_KEY_DELIMITER)) {
+          const parts = content.split(ANSWER_KEY_DELIMITER);
+          newContent = parts[0] + '\n\n--- નવો પ્રશ્ન ---\n' + result.regeneratedQuestion + '\n\n' + ANSWER_KEY_DELIMITER + parts[1];
+        } else {
+          newContent = content + '\n\n--- નવો પ્રશ્ન ---\n' + result.regeneratedQuestion;
+        }
+
         setContent(newContent);
-        paginateContent(newContent);
+        const visible = getVisibleContent(newContent, showAnswerKey);
+        paginateContent(visible);
         await updatePaperContent(id, newContent);
         setQuestionToRegen("");
         toast({ title: 'પ્રશ્ન બદલાયો', description: 'નવો પ્રશ્ન ઉમેરવામાં આવ્યો છે.' });
@@ -196,7 +228,7 @@ export default function PaperPage() {
       const result = await socraticTutor({
         subject: paper.settings.subject,
         classLevel: paper.settings.classLevel,
-        question: content.slice(0, 500), // Passing start of paper as context
+        question: content.slice(0, 500), 
         studentQuery: userMsg.text,
         history: chatMessages
       });
@@ -283,7 +315,8 @@ export default function PaperPage() {
             <Button variant="outline" onClick={() => {
               setIsEditing(false);
               setContent(paper.content);
-              paginateContent(paper.content);
+              const visible = getVisibleContent(paper.content, showAnswerKey);
+              paginateContent(visible);
             }}>
               કેન્સલ
             </Button>
@@ -294,6 +327,15 @@ export default function PaperPage() {
             સુધારો કરો
           </Button>
         )}
+
+        <Button 
+          variant={showAnswerKey ? "default" : "outline"} 
+          onClick={() => setShowAnswerKey(!showAnswerKey)}
+          disabled={isEditing || !content.includes(ANSWER_KEY_DELIMITER)}
+        >
+          {showAnswerKey ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+          {showAnswerKey ? "જવાબવહી સંતાડો" : "જવાબવહી જુઓ"}
+        </Button>
         
         <Dialog>
           <DialogTrigger asChild>
