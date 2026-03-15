@@ -40,7 +40,7 @@ import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, Search } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
@@ -152,11 +152,26 @@ export function GenerateForm() {
         state: 'Gujarat'
       });
       
+      // Sanitizing the settings object to remove undefined values
       const paperSettings: ExamPaperSettings = {
-        ...values,
-        state: 'Gujarat',
-        schoolLogo: schoolLogoDataUri || undefined,
+        state: values.state,
+        district: values.district,
+        taluka: values.taluka || "",
+        board: values.board,
+        classLevel: values.classLevel,
+        subject: values.subject,
+        chapters: values.chapters,
+        totalMarks: values.totalMarks,
+        language: values.language,
+        schoolName: values.schoolName,
+        timeAllowed: values.timeAllowed || "",
+        blueprintText: values.blueprintText || "",
       };
+
+      if (schoolLogoDataUri) {
+        paperSettings.schoolLogo = schoolLogoDataUri;
+      }
+
       const title = `${values.subject} - ધોરણ ${values.classLevel} (${values.board})`;
 
       const paperId = await addPaper(user.uid, title, paperSettings, result.examPaper);
