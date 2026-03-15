@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition, useRef } from 'react';
@@ -169,7 +170,15 @@ export default function PaperPage() {
 
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
-      window.print();
+      try {
+        window.print();
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'પ્રિન્ટ ભૂલ',
+          description: 'પ્રિન્ટ સર્વિસ શરૂ કરવામાં સમસ્યા આવી છે. કૃપા કરીને તમારું પ્રિન્ટર કનેક્શન તપાસો.',
+        });
+      }
     }
   };
 
@@ -258,9 +267,9 @@ export default function PaperPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
       {/* Hidden container for printing the WHOLE content */}
-      <div className="hidden print:block print:bg-white print:p-0 print:m-0 print:text-black">
+      <div className="hidden print:block print:bg-white print:p-0 print:m-0 print:text-black w-full">
         <PaperHeader />
-        <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
+        <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black border-none bg-transparent p-0 m-0">
           {getVisibleContent(content, showAnswerKey)}
         </pre>
       </div>

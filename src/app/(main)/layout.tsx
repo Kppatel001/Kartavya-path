@@ -66,7 +66,7 @@ export default function MainLayout({
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="નવું પેપર બનાવો" className="h-11">
+                <SidebarMenuButton asChild tooltip="નવું પેપર તૈયાર કરો" className="h-11">
                   <Link href="/generate">
                     <FilePlus2 className="text-primary h-5 w-5" />
                     <span className="font-medium">પેપર તૈયાર કરો</span>
@@ -111,7 +111,7 @@ export default function MainLayout({
         </Sidebar>
 
         <main className="flex-1 bg-background text-foreground overflow-x-hidden">
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b border-border bg-background/80 backdrop-blur-md px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b border-border bg-background/80 backdrop-blur-md px-6 no-print">
             <div className="mr-auto hidden lg:flex items-center gap-2">
               <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">STD 10</Badge>
               <p className="text-sm font-medium text-muted-foreground">ગુજરાત વિદ્યા AI - શુદ્ધ ગુજરાતી લર્નિંગ</p>

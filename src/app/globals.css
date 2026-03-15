@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,7 +62,9 @@
   [role="dialog"],
   .fixed,
   .toaster,
-  [aria-live="polite"] {
+  [aria-live="polite"],
+  .sidebar-provider,
+  .sidebar-rail {
     display: none !important;
   }
   
@@ -74,11 +77,17 @@
     -webkit-print-color-adjust: exact;
   }
   
+  html, body {
+    height: auto !important;
+  }
+
   main {
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
     background-color: white !important;
+    display: block !important;
+    overflow: visible !important;
   }
 
   pre {
@@ -89,6 +98,8 @@
     line-height: 1.6 !important;
     border: none !important;
     background: transparent !important;
+    width: 100% !important;
+    overflow: visible !important;
   }
   
   .badge {
@@ -99,6 +110,9 @@
   .hidden.print\:block {
     display: block !important;
     width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
   }
 
   /* Page break rules */
