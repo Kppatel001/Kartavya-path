@@ -8,7 +8,7 @@ import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, FileText, Calendar, Trash2 } from 'lucide-react';
+import { PlusCircle, FileText, Calendar, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { gu } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -40,6 +40,7 @@ export default function HistoryPage() {
   const { toast } = useToast();
   const [papers, setPapers] = useState<ExamPaper[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -53,14 +54,18 @@ export default function HistoryPage() {
   }, [user]);
 
   const handleDelete = async (e: React.MouseEvent, paperId: string) => {
+    // Prevent any parent link or card click events
     e.preventDefault();
     e.stopPropagation();
     
-    if (!confirm('શું તમે આ પ્રશ્નપત્ર કાઢી નાખવા માંગો છો?')) return;
+    if (deletingId) return;
 
+    if (!confirm('શું તમે આ પ્રશ્નપત્ર કાયમ માટે કાઢી નાખવા માંગો છો?')) return;
+
+    setDeletingId(paperId);
     try {
       await deletePaper(paperId);
-      setPapers(papers.filter(p => p.id !== paperId));
+      setPapers(prev => prev.filter(p => p.id !== paperId));
       toast({
         title: 'સફળતા',
         description: 'પ્રશ્નપત્ર સફળતાપૂર્વક કાઢી નાખવામાં આવ્યું છે.',
@@ -71,13 +76,17 @@ export default function HistoryPage() {
         title: 'ભૂલ',
         description: 'પ્રશ્નપત્ર કાઢી નાખવામાં નિષ્ફળતા મળી.',
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const formatDate = (paper: ExamPaper) => {
     if (!paper.createdAt) return 'હમણાં જ';
     try {
-        return format(paper.createdAt.toDate(), 'PPP', { locale: gu });
+        // Handle both Firestore Timestamp and Date object if converted
+        const date = typeof paper.createdAt.toDate === 'function' ? paper.createdAt.toDate() : new Date(paper.createdAt as any);
+        return format(date, 'PPP', { locale: gu });
     } catch (e) {
         return 'તારીખ ઉપલબ્ધ નથી';
     }
@@ -106,11 +115,16 @@ export default function HistoryPage() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20"
+                    disabled={deletingId === paper.id}
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-20 relative"
                     onClick={(e) => handleDelete(e, paper.id)}
                     title="ડિલીટ કરો"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {deletingId === paper.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
                 <CardDescription className="flex items-center gap-1">
