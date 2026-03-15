@@ -88,7 +88,7 @@ export async function updatePaperContent(paperId: string, content: string): Prom
 }
 
 export async function deletePaper(paperId: string): Promise<void> {
-  if (!db) return;
+  if (!db) throw new Error("Firestore database is not initialized.");
   const docRef = doc(db, papersCollection, paperId);
   try {
     await deleteDoc(docRef);
