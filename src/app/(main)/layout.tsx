@@ -89,7 +89,7 @@ export default function MainLayout({
                     <History className="text-primary h-5 w-5" />
                     <span className="font-medium">મારા પેપર્સ</span>
                   </a>
-                </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenuItem>
               
               <div className="h-px bg-border/50 my-4 mx-2" />
