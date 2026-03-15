@@ -23,8 +23,6 @@ import {
   LayoutDashboard, 
   BrainCircuit, 
   ShieldCheck,
-  GraduationCap,
-  Settings,
   Menu
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -89,7 +87,7 @@ export default function MainLayout({
                     <History className="text-primary h-5 w-5" />
                     <span className="font-medium">મારા પેપર્સ</span>
                   </a>
-                </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenuItem>
               
               <div className="h-px bg-border/50 my-4 mx-2" />
@@ -99,24 +97,6 @@ export default function MainLayout({
                   <a href="/focus">
                     <ShieldCheck className="text-accent h-5 w-5" />
                     <span className="font-medium">ફોકસ મોડ</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="સ્માર્ટ ટ્યુટર" className="h-11">
-                  <a href="/dashboard">
-                    <GraduationCap className="text-green-500 h-5 w-5" />
-                    <span className="font-medium">સ્માર્ટ ટ્યુટર</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="સેટિંગ્સ" className="h-11">
-                  <a href="/dashboard">
-                    <Settings className="text-muted-foreground h-5 w-5" />
-                    <span className="font-medium">સેટિંગ્સ</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
