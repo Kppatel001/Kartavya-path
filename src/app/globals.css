@@ -50,6 +50,7 @@
 }
 
 @media print {
+  /* Hide all UI elements that are not the paper content */
   .no-print, 
   header, 
   aside, 
@@ -58,7 +59,9 @@
   [data-sidebar="sidebar"],
   .sidebar-trigger,
   [role="dialog"],
-  .fixed {
+  .fixed,
+  .toaster,
+  [aria-live="polite"] {
     display: none !important;
   }
   
@@ -68,6 +71,7 @@
     padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
+    -webkit-print-color-adjust: exact;
   }
   
   main {
@@ -83,14 +87,31 @@
     white-space: pre-wrap !important;
     font-family: serif !important;
     line-height: 1.6 !important;
+    border: none !important;
+    background: transparent !important;
   }
   
   .badge {
     display: none !important;
   }
 
-  /* Force hidden container to show only on print */
+  /* Ensure the hidden print-only container is shown */
   .hidden.print\:block {
     display: block !important;
+    width: 100% !important;
+  }
+
+  /* Page break rules */
+  pre {
+    page-break-inside: auto;
+  }
+  
+  h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  @page {
+    margin: 2cm;
+    size: auto;
   }
 }

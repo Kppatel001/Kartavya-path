@@ -24,8 +24,7 @@ import {
   EyeOff,
   Volume2,
   VolumeX,
-  Printer,
-  Share2
+  Printer
 } from 'lucide-react';
 import {
   Dialog,
