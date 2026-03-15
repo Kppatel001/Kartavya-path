@@ -58,7 +58,11 @@ The exam paper must:
 - Use terminology from GCERT/GSEB textbooks.
 - Provide clear questions for each section (MCQs, VSA, SA, LA).
 
-Output the complete paper as printable text.`,
+CRITICAL REQUIREMENT:
+At the very end of the paper, after all questions, add a section called "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---". 
+In this section, provide the correct answers for all the questions listed in the paper. For MCQs and VSA, provide the direct answer. For SA and LA, provide the key points or a brief solution hint.
+
+Output the complete paper as printable text, including the questions first, followed by the Answer Key section at the bottom.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
