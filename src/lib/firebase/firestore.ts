@@ -5,7 +5,6 @@ import {
   query, 
   where, 
   getDocs, 
-  orderBy,
   doc,
   getDoc,
   updateDoc
@@ -39,13 +38,28 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
 
 export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
   if (!db) return [];
-  const q = query(collection(db, papersCollection), where("userId", "==", userId), orderBy("createdAt", "desc"));
-  const querySnapshot = await getDocs(q);
-  const papers: ExamPaper[] = [];
-  querySnapshot.forEach((doc) => {
-    papers.push({ id: doc.id, ...doc.data() } as ExamPaper);
-  });
-  return papers;
+  
+  // કમ્પોઝિટ ઇન્ડેક્સની ભૂલ ટાળવા માટે અહીંથી orderBy હટાવ્યું છે.
+  // આપણે નીચે જાવાસ્ક્રિપ્ટ દ્વારા સોર્ટિંગ કરીશું.
+  const q = query(collection(db, papersCollection), where("userId", "==", userId));
+  
+  try {
+    const querySnapshot = await getDocs(q);
+    const papers: ExamPaper[] = [];
+    querySnapshot.forEach((doc) => {
+      papers.push({ id: doc.id, ...doc.data() } as ExamPaper);
+    });
+    
+    // ઇન-મેમરી સોર્ટિંગ: નવા પેપર પહેલા આવશે
+    return papers.sort((a, b) => {
+      const dateA = a.createdAt?.toMillis() || 0;
+      const dateB = b.createdAt?.toMillis() || 0;
+      return dateB - dateA;
+    });
+  } catch (error) {
+    console.error("Error fetching papers: ", error);
+    return [];
+  }
 }
 
 export async function getPaper(paperId: string): Promise<ExamPaper | null> {
