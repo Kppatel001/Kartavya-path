@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition, useRef } from 'react';
@@ -50,9 +49,7 @@ import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
 import { socraticTutor } from '@/ai/flows/socratic-tutor-flow';
 import { gujaratiTTS } from '@/ai/flows/gujarati-tts-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { gu } from 'date-fns/locale';
 
 const LINES_PER_PAGE = 45;
 const ANSWER_KEY_DELIMITER = "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---";
@@ -173,15 +170,7 @@ export default function PaperPage() {
 
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
-      try {
-        window.print();
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'પ્રિન્ટ ભૂલ',
-          description: 'પ્રિન્ટ સર્વિસ શરૂ કરવામાં સમસ્યા આવી છે. કૃપા કરીને તમારું પ્રિન્ટર કનેક્શન તપાસો.',
-        });
-      }
+      window.print();
     }
   };
 
@@ -267,9 +256,6 @@ export default function PaperPage() {
             <div>વિદ્યાર્થીનું નામ: _________________________________</div>
             <div>રોલ નં: __________________</div>
         </div>
-        <div className="mt-3 text-center text-xs font-bold bg-black/5 py-1 uppercase tracking-widest border-y border-black">
-            સામાન્ય સૂચનાઓ: બધા પ્રશ્નો ફરજિયાત છે. જમણી બાજુના અંક ગુણ દર્શાવે છે.
-        </div>
     </div>
   );
 
@@ -294,13 +280,8 @@ export default function PaperPage() {
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ-માળખું: {paper.settings.board}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ: {paper.settings.board}</p>
                 </div>
-            </div>
-            <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setChatOpen(true)}>
-                    <BrainCircuit className="mr-2 h-4 w-4" /> AI વિદ્યા ટ્યુટર
-                </Button>
             </div>
         </div>
       </div>
@@ -312,24 +293,15 @@ export default function PaperPage() {
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               સેવ કરો
             </Button>
-            <Button variant="outline" onClick={() => {
-              setIsEditing(false);
-              setContent(paper.content);
-              const visible = getVisibleContent(paper.content, showAnswerKey);
-              paginateContent(visible);
-            }}>
-              કેન્સલ
-            </Button>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>કેન્સલ</Button>
           </>
         ) : (
           <>
             <Button variant="outline" onClick={() => setIsEditing(true)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              સુધારો
+              <Pencil className="mr-2 h-4 w-4" /> સુધારો
             </Button>
             <Button variant="default" onClick={handlePrint} className="bg-primary hover:bg-primary/90">
-              <Printer className="mr-2 h-4 w-4" />
-              પ્રિન્ટ કરો
+              <Printer className="mr-2 h-4 w-4" /> પ્રિન્ટ કરો
             </Button>
           </>
         )}
@@ -339,37 +311,30 @@ export default function PaperPage() {
         <Button 
           variant={showAnswerKey ? "default" : "outline"} 
           onClick={() => setShowAnswerKey(!showAnswerKey)}
-          disabled={isEditing || !content.includes(ANSWER_KEY_DELIMITER)}
+          disabled={isEditing}
         >
           {showAnswerKey ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-          {showAnswerKey ? "જવાબવહી સંતાડો" : "જવાબવહી જુઓ"}
+          જવાબવહી
         </Button>
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" disabled={isEditing}><Languages className="mr-2 h-4 w-4" /> ભાષા</Button>
+            <Button variant="outline" disabled={isEditing}><Languages className="mr-2 h-4 w-4" /> અનુવાદ</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>અનુવાદ કરો</DialogTitle>
-              <DialogDescription>કઈ ભાષામાં પેપર જોવા માંગો છો?</DialogDescription>
+              <DialogDescription>ભાષા પસંદ કરો</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="ભાષા પસંદ કરો" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {languages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <DialogFooter>
               <DialogClose asChild>
-                <Button onClick={handleTranslate} disabled={isTranslating}>
-                  {isTranslating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  અનુવાદ શરૂ કરો
-                </Button>
+                <Button onClick={handleTranslate} disabled={isTranslating}>શરૂ કરો</Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
@@ -389,7 +354,7 @@ export default function PaperPage() {
         />
       ) : (
         <div className="space-y-4 no-print">
-          <div className="border rounded-lg p-10 bg-white shadow-2xl min-h-[70vh] text-black overflow-hidden relative group exam-paper-preview">
+          <div className="border rounded-lg p-10 bg-white shadow-2xl min-h-[70vh] text-black overflow-hidden relative exam-paper-preview">
             {currentPage === 1 && <PaperHeader />}
             <pre className="whitespace-pre-wrap font-serif text-lg leading-loose text-black mt-4">
               {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}
@@ -403,14 +368,6 @@ export default function PaperPage() {
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> અગાઉનું
               </Button>
-              <div className="flex items-center gap-1">
-                {pages.map((_, i) => (
-                    <div 
-                        key={i} 
-                        className={`h-1.5 w-1.5 rounded-full ${currentPage === i + 1 ? 'bg-primary w-4' : 'bg-border'} transition-all`} 
-                    />
-                ))}
-              </div>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(pages.length, p + 1))} disabled={currentPage === pages.length}>
                 આગળનું <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -420,64 +377,42 @@ export default function PaperPage() {
       )}
 
       {/* Socratic Tutor Floating Chat */}
+      <Button 
+        variant="secondary" 
+        onClick={() => setChatOpen(true)}
+        className="fixed bottom-6 right-6 shadow-2xl no-print"
+      >
+        <BrainCircuit className="mr-2 h-4 w-4" /> AI ટ્યુટર
+      </Button>
+
       {chatOpen && (
-        <div className="fixed bottom-6 right-6 w-[400px] h-[550px] bg-card border-2 border-primary/50 shadow-2xl rounded-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4 no-print">
-          <div className="p-4 border-b bg-primary text-primary-foreground flex justify-between items-center rounded-t-xl">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                <BrainCircuit className="h-5 w-5" />
-              </div>
-              <div>
-                <span className="font-bold block text-sm">વિદ્યા AI ટ્યુટર</span>
-                <span className="text-[10px] opacity-80">ગાઈડેડ લર્નિંગ મોડ</span>
-              </div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => setChatOpen(false)} className="hover:bg-primary-foreground/10 h-8 w-8">
+        <div className="fixed bottom-6 right-6 w-[350px] h-[500px] bg-card border-2 border-primary shadow-2xl rounded-2xl flex flex-col z-50 no-print">
+          <div className="p-4 border-b bg-primary text-white flex justify-between items-center rounded-t-xl">
+            <span className="font-bold">વિદ્યા AI ટ્યુટર</span>
+            <Button variant="ghost" size="icon" onClick={() => setChatOpen(false)} className="text-white hover:bg-white/10">
               <X className="h-4 w-4" />
             </Button>
           </div>
           <ScrollArea className="flex-1 p-4 bg-muted/30">
-            <div className="space-y-4">
-              <div className="bg-white/5 border border-border p-3 rounded-2xl text-sm leading-relaxed shadow-sm">
-                નમસ્તે! હું **વિદ્યા AI** છું. આ પ્રશ્નપત્રમાં તમને ક્યાંય મુશ્કેલી છે? મને પૂછો, હું તમને સીધો જવાબ આપવાને બદલે વિચારવામાં મદદ કરીશ! 🧠
-              </div>
+            <div className="space-y-4 text-sm">
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
-                    msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-card border border-border rounded-tl-none'
-                  }`}>
+                  <div className={`p-3 rounded-2xl ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-card border'}`}>
                     {msg.text}
                   </div>
                 </div>
               ))}
-              {isTutoring && (
-                <div className="flex justify-start">
-                  <div className="bg-card p-3 rounded-2xl border border-border flex gap-1">
-                    <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" />
-                    <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              )}
               <div ref={scrollRef} />
             </div>
           </ScrollArea>
-          <div className="p-4 border-t bg-card rounded-b-xl flex gap-2">
-            <Textarea
+          <div className="p-4 border-t flex gap-2">
+            <Input
               value={currentQuery}
               onChange={(e) => setCurrentQuery(e.target.value)}
-              placeholder="તમારો પ્રશ્ન પૂછો..."
-              className="min-h-[44px] max-h-[100px] text-xs resize-none rounded-xl"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleTutorSubmit();
-                }
-              }}
+              placeholder="પ્રશ્ન પૂછો..."
+              onKeyDown={(e) => e.key === 'Enter' && handleTutorSubmit()}
             />
-            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring || !currentQuery.trim()} className="shrink-0 h-11 w-11 rounded-xl shadow-lg">
-              <Send className="h-5 w-5" />
-            </Button>
+            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring}><Send className="h-4 w-4" /></Button>
           </div>
         </div>
       )}

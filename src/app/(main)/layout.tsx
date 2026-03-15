@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect } from 'react';
@@ -52,7 +51,7 @@ export default function MainLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full overflow-hidden">
-        <Sidebar collapsible="icon" className="bg-sidebar border-r border-border shrink-0">
+        <Sidebar collapsible="icon" className="bg-sidebar border-r border-border shrink-0 no-print">
           <SidebarHeader>
             <div className="flex items-center gap-2 p-4">
               <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shrink-0">
