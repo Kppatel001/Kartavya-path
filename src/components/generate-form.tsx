@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -26,24 +26,34 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { educationBoards, classLevels, subjects, languages } from '@/lib/data';
+import { 
+  educationBoards, 
+  classLevels, 
+  subjects, 
+  languages, 
+  districtsOfGujarat, 
+  talukasByDistrict, 
+  schoolsByDistrict 
+} from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, School, Search } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
   state: z.string().default('Gujarat'),
+  district: z.string().min(1, 'જિલ્લો પસંદ કરો.'),
+  taluka: z.string().optional(),
   board: z.string().min(1, 'બોર્ડ પસંદ કરો.'),
   classLevel: z.string().min(1, 'ધોરણ પસંદ કરો.'),
   subject: z.string().min(1, 'વિષય પસંદ કરો.'),
   chapters: z.string().min(1, 'પ્રકરણોના નામ લખો.'),
   totalMarks: z.coerce.number().min(10, 'કુલ ગુણ ઓછામાં ઓછા 10 હોવા જોઈએ.').max(100, 'કુલ ગુણ 100 થી વધુ ન હોઈ શકે.'),
   language: z.string().min(1, 'ભાષા પસંદ કરો.'),
-  schoolName: z.string().optional(),
+  schoolName: z.string().min(1, 'શાળાનું નામ લખો અથવા પસંદ કરો.'),
   timeAllowed: z.string().optional(),
   blueprintText: z.string().optional(),
 });
@@ -56,6 +66,7 @@ export function GenerateForm() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [schoolLogoDataUri, setSchoolLogoDataUri] = useState<string | null>(null);
+  const [customSchool, setCustomSchool] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +75,8 @@ export function GenerateForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       state: 'Gujarat',
+      district: '',
+      taluka: '',
       board: educationBoards[0],
       classLevel: '',
       subject: '',
@@ -75,6 +88,10 @@ export function GenerateForm() {
       blueprintText: '',
     },
   });
+
+  const selectedDistrict = form.watch('district');
+  const availableTalukas = selectedDistrict ? talukasByDistrict[selectedDistrict] || [] : [];
+  const availableSchools = selectedDistrict ? schoolsByDistrict[selectedDistrict] || [] : [];
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -169,20 +186,107 @@ export function GenerateForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* School Selection Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 border-b border-border pb-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">શાળાની વિગતો</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
-                  name="schoolName"
+                  name="district"
                   render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>શાળાનું નામ</FormLabel>
-                      <FormControl>
-                        <Input placeholder="શાળા અથવા સંસ્થાનું નામ લખો" {...field} className="bg-background" />
-                      </FormControl>
+                    <FormItem>
+                      <FormLabel>જિલ્લો</FormLabel>
+                      <Select onValueChange={(val) => {
+                        field.onChange(val);
+                        form.setValue('taluka', '');
+                        form.setValue('schoolName', '');
+                      }} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-background"><SelectValue placeholder="જિલ્લો પસંદ કરો" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {districtsOfGujarat.map((d) => (
+                            <SelectItem key={d} value={d}>{d}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="taluka"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>તાલુકો / શહેર</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrict}>
+                        <FormControl>
+                          <SelectTrigger className="bg-background"><SelectValue placeholder="તાલુકો પસંદ કરો" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableTalukas.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="schoolName"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>શાળાનું નામ</FormLabel>
+                      {customSchool ? (
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input placeholder="શાળાનું નામ લખો" {...field} className="bg-background" />
+                          </FormControl>
+                          <Button type="button" variant="ghost" size="icon" onClick={() => {
+                            setCustomSchool(false);
+                            form.setValue('schoolName', '');
+                          }}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Select onValueChange={(val) => {
+                          if (val === 'ADD_NEW') {
+                            setCustomSchool(true);
+                            form.setValue('schoolName', '');
+                          } else {
+                            field.onChange(val);
+                          }
+                        }} value={field.value} disabled={!selectedDistrict}>
+                          <FormControl>
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="શાળા પસંદ કરો" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {availableSchools.map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                            <SelectItem value="ADD_NEW" className="font-bold text-primary">
+                              + મારી શાળા ઉમેરો
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="flex flex-col gap-2">
                     <FormLabel>શાળાનો લોગો</FormLabel>
                     <div className="flex items-center gap-4">
@@ -196,12 +300,22 @@ export function GenerateForm() {
                             </div>
                         ) : (
                             <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} className="bg-background">
-                                <ImageIcon className="mr-2 h-4 w-4" /> લોગો અપલોડ કરો
+                                <ImageIcon className="mr-2 h-4 w-4" /> લોગો
                             </Button>
                         )}
                     </div>
                 </div>
+              </div>
+            </div>
 
+            {/* Exam Paper Details Section */}
+            <div className="space-y-6 pt-4 border-t border-border">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">પરીક્ષાની વિગતો</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
                   name="board"
@@ -326,11 +440,13 @@ export function GenerateForm() {
                     )}
                   />
                 </div>
+              </div>
             </div>
 
+            {/* Blueprint Section */}
             <div className="border-t border-border pt-8">
                  <div className="flex items-center gap-2 mb-4">
-                    <FileText className="h-5 w-5 text-primary" />
+                    <Sparkles className="h-5 w-5 text-primary" />
                     <h3 className="text-lg font-semibold">અભ્યાસક્રમ બ્લુપ્રિન્ટ (Blueprint)</h3>
                  </div>
                  <p className="text-sm text-muted-foreground mb-6">સત્તાવાર GSEB બ્લુપ્રિન્ટ અથવા સિલેબસ દસ્તાવેજ અપલોડ કરો. AI પેપરના માળખાનું વિશ્લેષણ કરશે.</p>
