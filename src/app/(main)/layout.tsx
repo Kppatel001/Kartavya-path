@@ -57,7 +57,7 @@ export default function MainLayout({
               <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shrink-0">
                 <BrainCircuit className="h-6 w-6 text-white" />
               </div>
-              <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden whitespace-nowrap overflow-hidden text-ellipsis text-white">વિદ્યા AI</span>
+              <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden whitespace-nowrap overflow-hidden text-ellipsis text-white">કર્તવ્ય પથ</span>
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -111,7 +111,7 @@ export default function MainLayout({
               </SidebarTrigger>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn("border-primary/20 bg-primary/5 text-primary hidden xs:inline-flex")}>GSEB STD 10</Badge>
-                <p className="text-sm font-bold text-foreground truncate max-w-[150px] sm:max-w-none">ગુજરાત વિદ્યા AI</p>
+                <p className="text-sm font-bold text-foreground truncate max-w-[150px] sm:max-w-none">કર્તવ્ય પથ AI</p>
               </div>
             </div>
             <div className="flex items-center gap-4">

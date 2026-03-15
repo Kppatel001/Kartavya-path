@@ -5,8 +5,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'ExamSnap AI',
-  description: 'Generate board-aligned exam papers in seconds.',
+  title: 'કર્તવ્ય પથ',
+  description: 'GSEB ના ધોરણ મુજબ સેકન્ડોમાં પ્રશ્નપત્ર તૈયાર કરો.',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="gu" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

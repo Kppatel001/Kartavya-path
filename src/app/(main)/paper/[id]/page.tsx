@@ -329,6 +329,10 @@ export default function PaperPage() {
           {isSpeaking ? <VolumeX className="mr-2 h-4 w-4" /> : <Volume2 className="mr-2 h-4 w-4 text-primary" />}
           AI સમજાવશે
         </Button>
+        
+        <Button variant="default" onClick={() => window.print()} disabled={isEditing} className="bg-primary hover:bg-primary/90">
+          પ્રિન્ટ કરો
+        </Button>
       </div>
       
       {isEditing ? (
@@ -361,6 +365,14 @@ export default function PaperPage() {
         </div>
       )}
 
+      {/* Print-only layout */}
+      <div className="hidden print:block text-black bg-white p-0 m-0">
+        <PaperHeader />
+        <pre className="whitespace-pre-wrap font-serif text-lg leading-loose text-black mt-4">
+          {content}
+        </pre>
+      </div>
+
       {/* Socratic Tutor Floating Chat */}
       <Button 
         variant="secondary" 
@@ -373,7 +385,7 @@ export default function PaperPage() {
       {chatOpen && (
         <div className="fixed bottom-6 right-6 w-[350px] h-[500px] bg-card border-2 border-primary shadow-2xl rounded-2xl flex flex-col z-50 no-print">
           <div className="p-4 border-b bg-primary text-white flex justify-between items-center rounded-t-xl">
-            <span className="font-bold">વિદ્યા AI ટ્યુટર</span>
+            <span className="font-bold">કર્તવ્ય પથ AI ટ્યુટર</span>
             <Button variant="ghost" size="icon" onClick={() => setChatOpen(false)} className="text-white hover:bg-white/10">
               <X className="h-4 w-4" />
             </Button>

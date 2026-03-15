@@ -16,9 +16,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 const formSchema = z.object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters." }).optional(),
-    email: z.string().email({ message: "Please enter a valid email." }),
-    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+    name: z.string().min(2, { message: "નામ ઓછામાં ઓછું ૨ અક્ષરનું હોવું જોઈએ." }).optional(),
+    email: z.string().email({ message: "કૃપા કરીને સાચું ઈમેલ એડ્રેસ લખો." }),
+    password: z.string().min(6, { message: "પાસવર્ડ ઓછામાં ઓછો ૬ અક્ષરનો હોવો જોઈએ." }),
 });
 
 export default function LoginPage() {
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/generate');
+      router.push('/dashboard');
     }
   }, [user, router]);
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
   if (loading || user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin" />
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
@@ -77,9 +77,9 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Logo className="h-8 w-8" />
           </div>
-          <CardTitle className="font-headline text-3xl">ExamSnap AI</CardTitle>
+          <CardTitle className="font-headline text-3xl">કર્તવ્ય પથ</CardTitle>
           <CardDescription>
-            {isSignUp ? 'Create an account to get started.' : 'Sign in to your account.'}
+            {isSignUp ? 'નવું એકાઉન્ટ બનાવો' : 'તમારા એકાઉન્ટમાં લોગિન કરો'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,9 +91,9 @@ export default function LoginPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>પૂરું નામ</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input placeholder="તમારું નામ" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                     <FormLabel>Email</FormLabel>
+                     <FormLabel>ઈમેલ</FormLabel>
                     <FormControl>
                       <Input autoComplete="email" placeholder="name@example.com" {...field} />
                     </FormControl>
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                     <FormLabel>Password</FormLabel>
+                     <FormLabel>પાસવર્ડ</FormLabel>
                     <FormControl>
                       <Input autoComplete={isSignUp ? 'new-password' : 'current-password'} type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -133,7 +133,7 @@ export default function LoginPage() {
                     disabled={isSubmitting}
                 >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isSignUp ? 'Create Account' : 'Sign In'}
+                    {isSignUp ? 'એકાઉન્ટ બનાવો' : 'સાઇન ઇન'}
                 </Button>
               </div>
             </form>
@@ -142,13 +142,13 @@ export default function LoginPage() {
           <div className="text-center text-sm text-muted-foreground mt-4">
             {isSignUp ? (
                 <>
-                    Already have an account?{' '}
-                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(false)}>Sign In</Button>
+                    પહેલેથી એકાઉન્ટ છે?{' '}
+                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(false)}>લોગિન કરો</Button>
                 </>
             ) : (
                 <>
-                    Don&apos;t have an account?{' '}
-                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(true)}>Sign Up</Button>
+                    એકાઉન્ટ નથી?{' '}
+                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(true)}>સાઇન અપ કરો</Button>
                 </>
             )}
           </div>
@@ -158,7 +158,7 @@ export default function LoginPage() {
                 <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">અથવા</span>
             </div>
           </div>
           
@@ -173,7 +173,7 @@ export default function LoginPage() {
             ) : (
               <Icons.google className="mr-3 h-6 w-6" />
             )}
-            Sign in with Google
+            Google સાથે લોગિન કરો
           </Button>
 
         </CardContent>
