@@ -8,7 +8,7 @@ import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, S
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/user-nav';
-import { FilePlus2, History, Loader2 } from 'lucide-react';
+import { FilePlus2, History, Loader2, BookOpen } from 'lucide-react';
 
 export default function MainLayout({
   children,
@@ -26,7 +26,7 @@ export default function MainLayout({
 
   if (loading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-background text-white">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
@@ -35,28 +35,28 @@ export default function MainLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
-        <Sidebar collapsible="icon">
+        <Sidebar collapsible="icon" className="bg-sidebar border-r border-border">
           <SidebarHeader>
-            <Button variant="ghost" className="h-10 w-full justify-start px-2">
-              <Logo />
-              <span className="font-headline text-lg ml-2">ExamSnap AI</span>
-            </Button>
+            <div className="flex items-center gap-2 p-4">
+              <BookOpen className="h-8 w-8 text-primary" />
+              <span className="font-headline text-xl font-bold tracking-tight">ગુજરાત વિદ્યા AI</span>
+            </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Generate Paper">
+                <SidebarMenuButton asChild tooltip="નવું પેપર બનાવો">
                   <Link href="/generate">
-                    <FilePlus2 />
-                    <span>Generate Paper</span>
+                    <FilePlus2 className="text-primary" />
+                    <span>નવું પેપર બનાવો</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Paper History">
+                <SidebarMenuButton asChild tooltip="ઇતિહાસ">
                   <Link href="/history">
-                    <History />
-                    <span>Paper History</span>
+                    <History className="text-primary" />
+                    <span>પેપર ઇતિહાસ</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -64,8 +64,8 @@ export default function MainLayout({
           </SidebarContent>
         </Sidebar>
 
-        <main className="flex-1">
-          <header className="sticky top-0 z-10 flex h-14 items-center justify-end gap-4 border-b bg-background/80 backdrop-blur-sm px-4">
+        <main className="flex-1 bg-background text-foreground">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b border-border bg-background/80 backdrop-blur-md px-6">
             <UserNav />
           </header>
           <div className="p-4 sm:p-6 lg:p-8">

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,23 +26,23 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { indianStates, educationBoards, classLevels, subjects, languages } from '@/lib/data';
+import { educationBoards, classLevels, subjects, languages } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
-  state: z.string().min(1, 'State is required.'),
-  board: z.string().min(1, 'Board is required.'),
-  classLevel: z.string().min(1, 'Class is required.'),
-  subject: z.string().min(1, 'Subject is required.'),
-  chapters: z.string().min(1, 'Please specify at least one chapter.'),
-  totalMarks: z.coerce.number().min(10, 'Total marks must be at least 10.').max(100, 'Total marks cannot exceed 100.'),
-  language: z.string().min(1, 'Language is required.'),
+  state: z.string().default('Gujarat'),
+  board: z.string().min(1, 'બોર્ડ પસંદ કરો.'),
+  classLevel: z.string().min(1, 'ધોરણ પસંદ કરો.'),
+  subject: z.string().min(1, 'વિષય પસંદ કરો.'),
+  chapters: z.string().min(1, 'પ્રકરણોના નામ લખો.'),
+  totalMarks: z.coerce.number().min(10, 'કુલ ગુણ ઓછામાં ઓછા 10 હોવા જોઈએ.').max(100, 'કુલ ગુણ 100 થી વધુ ન હોઈ શકે.'),
+  language: z.string().min(1, 'ભાષા પસંદ કરો.'),
   schoolName: z.string().optional(),
   timeAllowed: z.string().optional(),
   blueprintText: z.string().optional(),
@@ -64,13 +63,13 @@ export function GenerateForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      state: '',
-      board: '',
+      state: 'Gujarat',
+      board: educationBoards[0],
       classLevel: '',
       subject: '',
       chapters: '',
       totalMarks: undefined,
-      language: '',
+      language: languages[0],
       schoolName: '',
       timeAllowed: '',
       blueprintText: '',
@@ -92,14 +91,14 @@ export function GenerateForm() {
           const result = await extractBlueprint({ fileDataUri: dataUri });
           form.setValue('blueprintText', result.extractedBlueprint);
           toast({
-            title: 'Blueprint Extracted',
-            description: 'AI has successfully analyzed your uploaded document.',
+            title: 'બ્લુપ્રિન્ટ નિષ્કર્ષિત',
+            description: 'AI એ તમારા દસ્તાવેજનું સફળતાપૂર્વક વિશ્લેષણ કર્યું છે.',
           });
         } catch (error) {
           toast({
             variant: 'destructive',
-            title: 'Extraction Failed',
-            description: 'Could not extract details from the document.',
+            title: 'નિષ્કર્ષણ નિષ્ફળ',
+            description: 'દસ્તાવેજમાંથી વિગતો મેળવી શકાઈ નથી.',
           });
         } finally {
           setIsExtracting(false);
@@ -107,7 +106,6 @@ export function GenerateForm() {
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('File reading failed', error);
       setIsExtracting(false);
     }
   };
@@ -119,56 +117,41 @@ export function GenerateForm() {
     const reader = new FileReader();
     reader.onload = (event) => {
         setSchoolLogoDataUri(event.target?.result as string);
-        toast({ title: 'Logo Uploaded', description: 'School logo has been added to your settings.' });
+        toast({ title: 'લોગો અપલોડ થયો', description: 'શાળાનો લોગો ઉમેરવામાં આવ્યો છે.' });
     };
     reader.readAsDataURL(file);
   };
 
-  const clearFile = () => {
-    setUploadedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    form.setValue('blueprintText', '');
-  };
-
-  const clearLogo = () => {
-    setSchoolLogoDataUri(null);
-    if (logoInputRef.current) logoInputRef.current.value = '';
-  };
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'You must be logged in to generate a paper.',
-      });
+      toast({ variant: 'destructive', title: 'ભૂલ', description: 'પેપર બનાવવા માટે લોગિન કરવું જરૂરી છે.' });
       return;
     }
 
     setIsGenerating(true);
     try {
-      const result = await generateBoardAlignedExamPaper(values);
+      const result = await generateBoardAlignedExamPaper({
+        ...values,
+        state: 'Gujarat'
+      });
       
       const paperSettings: ExamPaperSettings = {
         ...values,
+        state: 'Gujarat',
         schoolLogo: schoolLogoDataUri || undefined,
       };
-      const title = `${values.subject} - Class ${values.classLevel} (${values.board})`;
+      const title = `${values.subject} - ધોરણ ${values.classLevel} (${values.board})`;
 
       const paperId = await addPaper(user.uid, title, paperSettings, result.examPaper);
 
-      toast({
-        title: 'Paper Generated Successfully!',
-        description: 'Redirecting to your new exam paper.',
-      });
+      toast({ title: 'પેપર સફળતાપૂર્વક બન્યું!', description: 'નવું પેપર જોવા માટે રીડાયરેક્ટ થઈ રહ્યું છે.' });
       router.push(`/paper/${paperId}`);
 
     } catch (error: any) {
-      console.error("Generation submission failed", error);
       toast({
         variant: 'destructive',
-        title: 'Generation Failed',
-        description: error.message || 'An unexpected error occurred. Please try again.',
+        title: 'નિષ્ફળતા',
+        description: error.message || 'પેપર બનાવવામાં ભૂલ આવી છે. ફરી પ્રયાસ કરો.',
       });
     } finally {
       setIsGenerating(false);
@@ -176,78 +159,58 @@ export function GenerateForm() {
   }
 
   return (
-    <Card>
+    <Card className="border-border bg-card shadow-2xl">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader>
-            <CardTitle>Paper Configuration</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              નવું પ્રશ્નપત્ર બનાવો
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
-            {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
                   name="schoolName"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>School Name</FormLabel>
+                      <FormLabel>શાળાનું નામ</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter school or institution name" {...field} />
+                        <Input placeholder="શાળા અથવા સંસ્થાનું નામ લખો" {...field} className="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex items-end gap-4">
-                    <div className="flex-1">
-                        <FormLabel>School Logo</FormLabel>
-                        <div className="mt-2 flex items-center gap-4">
-                            <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
-                            {schoolLogoDataUri ? (
-                                <div className="relative h-10 w-10 border rounded overflow-hidden group">
-                                    <img src={schoolLogoDataUri} alt="Logo" className="h-full w-full object-contain" />
-                                    <button onClick={clearLogo} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                        <X className="h-4 w-4 text-white" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
-                                    <ImageIcon className="mr-2 h-4 w-4" /> Upload Logo
-                                </Button>
-                            )}
-                        </div>
+                <div className="flex flex-col gap-2">
+                    <FormLabel>શાળાનો લોગો</FormLabel>
+                    <div className="flex items-center gap-4">
+                        <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
+                        {schoolLogoDataUri ? (
+                            <div className="relative h-10 w-10 border rounded overflow-hidden group">
+                                <img src={schoolLogoDataUri} alt="Logo" className="h-full w-full object-contain" />
+                                <button type="button" onClick={() => setSchoolLogoDataUri(null)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                    <X className="h-4 w-4 text-white" />
+                                </button>
+                            </div>
+                        ) : (
+                            <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} className="bg-background">
+                                <ImageIcon className="mr-2 h-4 w-4" /> લોગો અપલોડ કરો
+                            </Button>
+                        )}
                     </div>
                 </div>
 
                 <FormField
                   control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a state" /></SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {indianStates.map((state) => (
-                            <SelectItem key={state} value={state}>{state}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="board"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Board</FormLabel>
+                      <FormLabel>બોર્ડ</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a board" /></SelectTrigger>
+                          <SelectTrigger className="bg-background"><SelectValue placeholder="બોર્ડ પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {educationBoards.map((board) => (
@@ -264,14 +227,14 @@ export function GenerateForm() {
                   name="classLevel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Class</FormLabel>
+                      <FormLabel>ધોરણ</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
+                          <SelectTrigger className="bg-background"><SelectValue placeholder="ધોરણ પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {classLevels.map((level) => (
-                            <SelectItem key={level} value={level}>{level}</SelectItem>
+                            <SelectItem key={level} value={level}>ધોરણ {level}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -284,10 +247,10 @@ export function GenerateForm() {
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject</FormLabel>
+                      <FormLabel>વિષય</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a subject" /></SelectTrigger>
+                          <SelectTrigger className="bg-background"><SelectValue placeholder="વિષય પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {subjects.map((subject) => (
@@ -304,9 +267,9 @@ export function GenerateForm() {
                   name="totalMarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Total Marks</FormLabel>
+                      <FormLabel>કુલ ગુણ</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 80" {...field} value={field.value ?? ''} />
+                        <Input type="number" placeholder="દા.ત., 80" {...field} value={field.value ?? ''} className="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -317,9 +280,9 @@ export function GenerateForm() {
                   name="timeAllowed"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Time Allowed</FormLabel>
+                      <FormLabel>સમય મર્યાદા</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., 3 Hours" {...field} />
+                        <Input placeholder="દા.ત., 3 કલાક" {...field} className="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,10 +293,10 @@ export function GenerateForm() {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Language</FormLabel>
+                      <FormLabel>પેપરની ભાષા</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a language" /></SelectTrigger>
+                          <SelectTrigger className="bg-background"><SelectValue placeholder="ભાષા પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {languages.map((lang) => (
@@ -345,18 +308,18 @@ export function GenerateForm() {
                     </FormItem>
                   )}
                 />
-                <div className="md:col-span-2">
+                <div className="md:col-span-3">
                   <FormField
                     control={form.control}
                     name="chapters"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Chapters / Topics</FormLabel>
+                        <FormLabel>પ્રકરણો / ટોપિક્સ</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Algebra, Geometry, Statistics" {...field} />
+                          <Input placeholder="દા.ત., બીજગણિત, ભૂમિતિ, આંકડાશાસ્ત્ર" {...field} className="bg-background" />
                         </FormControl>
-                        <FormDescription>
-                          Separate multiple chapters with commas.
+                        <FormDescription className="text-muted-foreground">
+                          અલ્પવિરામ (comma) થી પ્રકરણો અલગ કરો.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -365,16 +328,15 @@ export function GenerateForm() {
                 </div>
             </div>
 
-            {/* Blueprint Section */}
-            <div className="border-t pt-8">
+            <div className="border-t border-border pt-8">
                  <div className="flex items-center gap-2 mb-4">
                     <FileText className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-semibold">Exam Blueprint</h3>
+                    <h3 className="text-lg font-semibold">અભ્યાસક્રમ બ્લુપ્રિન્ટ (Blueprint)</h3>
                  </div>
-                 <p className="text-sm text-muted-foreground mb-6">Upload a syllabus or blueprint document. AI will extract the structure for you.</p>
+                 <p className="text-sm text-muted-foreground mb-6">સત્તાવાર GSEB બ્લુપ્રિન્ટ અથવા સિલેબસ દસ્તાવેજ અપલોડ કરો. AI પેપરના માળખાનું વિશ્લેષણ કરશે.</p>
 
                  <div className="space-y-6">
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 bg-muted/30 transition-colors hover:bg-muted/50">
+                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-10 bg-muted/20 transition-colors hover:bg-muted/30">
                         <input
                             type="file"
                             className="hidden"
@@ -385,7 +347,7 @@ export function GenerateForm() {
                         {isExtracting ? (
                             <div className="flex flex-col items-center gap-2">
                                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                                <p className="text-sm font-medium">Analyzing document with AI...</p>
+                                <p className="text-sm font-medium">AI દસ્તાવેજનું વિશ્લેષણ કરી રહ્યું છે...</p>
                             </div>
                         ) : uploadedFile ? (
                             <div className="flex flex-col items-center gap-3">
@@ -394,18 +356,18 @@ export function GenerateForm() {
                                     <p className="text-sm font-semibold">{uploadedFile.name}</p>
                                     <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
-                                <Button type="button" variant="ghost" size="sm" onClick={clearFile} className="text-destructive">
-                                    <X className="mr-2 h-4 w-4" /> Remove
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setUploadedFile(null)} className="text-destructive">
+                                    <X className="mr-2 h-4 w-4" /> દૂર કરો
                                 </Button>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-3 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                                 <Upload className="h-12 w-12 text-muted-foreground" />
                                 <div className="text-center">
-                                    <p className="text-sm font-semibold">Click to upload document</p>
-                                    <p className="text-xs text-muted-foreground">PDF, JPG, PNG, or Word</p>
+                                    <p className="text-sm font-semibold">દસ્તાવેજ અપલોડ કરવા ક્લિક કરો</p>
+                                    <p className="text-xs text-muted-foreground">PDF, JPG, PNG અથવા Word</p>
                                 </div>
-                                <Button type="button" variant="outline" size="sm">Select File</Button>
+                                <Button type="button" variant="outline" size="sm" className="mt-2 bg-background">ફાઈલ પસંદ કરો</Button>
                             </div>
                         )}
                     </div>
@@ -415,11 +377,11 @@ export function GenerateForm() {
                       name="blueprintText"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Extracted Details (Editable)</FormLabel>
+                          <FormLabel>બ્લુપ્રિન્ટ વિગતો (તમે અહીં સુધારો કરી શકો છો)</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Describe section breakdown, mark distribution, or specific instructions..." 
-                              className="min-h-[150px]"
+                              placeholder="વિભાગ મુજબ માળખું, ગુણભાર અથવા ખાસ સૂચનાઓ લખો..." 
+                              className="min-h-[150px] bg-background"
                               {...field} 
                             />
                           </FormControl>
@@ -431,13 +393,13 @@ export function GenerateForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isGenerating || isExtracting}>
+            <Button type="submit" size="lg" className="w-full md:w-auto shadow-lg" disabled={isGenerating || isExtracting}>
               {isGenerating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Sparkles className="mr-2 h-4 w-4" />
               )}
-              Generate Professional Exam Paper
+              AI દ્વારા પ્રશ્નપત્ર તૈયાર કરો
             </Button>
           </CardFooter>
         </form>

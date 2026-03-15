@@ -1,23 +1,19 @@
 'use server';
 /**
- * @fileOverview A flow to generate board-aligned exam papers.
- *
- * - generateBoardAlignedExamPaper - A function that generates an exam paper based on user-specified criteria.
- * - GenerateBoardAlignedExamPaperInput - The input type for the generateBoardAlignedExamPaper function.
- * - GenerateBoardAlignedExamPaperOutput - The return type for the generateBoardAlignedExamPaper function.
+ * @fileOverview A flow to generate board-aligned exam papers for Gujarat Schools (GSEB focus).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateBoardAlignedExamPaperInputSchema = z.object({
-  state: z.string().describe('The state for the exam paper (e.g., "Maharashtra").'),
-  board: z.string().describe('The board for the exam paper (e.g., "CBSE").'),
+  state: z.string().default('Gujarat'),
+  board: z.string().describe('The board for the exam paper (e.g., "GSEB").'),
   classLevel: z.string().describe('The class level for the exam paper (e.g., "10").'),
   subject: z.string().describe('The subject for the exam paper (e.g., "Mathematics").'),
-  chapters: z.string().describe('The chapters to include in the exam paper (e.g., "Chapter 1, Chapter 2").'),
+  chapters: z.string().describe('The chapters to include in the exam paper.'),
   totalMarks: z.number().describe('The total marks for the exam paper.'),
-  language: z.string().optional().describe('The language for the exam paper (e.g., "English", "Hindi"). Defaults to English.'),
+  language: z.string().optional().describe('The language for the exam paper. Defaults to Gujarati.'),
   blueprintText: z.string().optional().describe('Extracted blueprint text or manual blueprint description.'),
 });
 
@@ -37,11 +33,10 @@ const generateBoardAlignedExamPaperPrompt = ai.definePrompt({
   name: 'generateBoardAlignedExamPaperPrompt',
   input: {schema: GenerateBoardAlignedExamPaperInputSchema},
   output: {schema: GenerateBoardAlignedExamPaperOutputSchema},
-  prompt: `You are an expert in generating board-aligned exam papers for Indian schools.
+  prompt: `You are an expert in generating board-aligned exam papers for Gujarat Secondary and Higher Secondary Education Board (GSEB).
 
-You will generate a complete exam paper based on the following information:
-
-State: {{{state}}}
+Generate a complete exam paper based on these details:
+State: Gujarat
 Board: {{{board}}}
 Class: {{{classLevel}}}
 Subject: {{{subject}}}
@@ -50,23 +45,20 @@ Total Marks: {{{totalMarks}}}
 Language: {{{language}}}
 
 {{#if blueprintText}}
-Blueprint / Instructions:
+Syllabus / Blueprint Details:
 {{{blueprintText}}}
 {{/if}}
 
-The exam paper should:
-- Be in the appropriate format for the specified board.
-- Follow the provided blueprint if available. Otherwise, create a standard layout for the board.
-- Be structured into sections (e.g., Section A, Section B).
-- Cover the specified chapters.
-- Have a total mark distribution that matches the specified total marks.
-- Include clear instructions for each section.
-- Prevent repeated question patterns.
-- Be suitable for printing and distribution to students.
-- Adapt to different board styles (CBSE competency-based, State Board textbook-based, ICSE descriptive, etc.).
+The exam paper must:
+- Strictly follow the official GSEB paper pattern for the specified class and subject.
+- Be entirely in the requested language (primary is Gujarati).
+- Include standard GSEB sections (e.g., Section A, B, C, D).
+- Ensure mark distribution is accurate to the total marks.
+- Include instructions like "બધા પ્રશ્નો ફરજિયાત છે" (All questions are compulsory).
+- Use terminology from GCERT/GSEB textbooks.
+- Provide clear questions for each section (MCQs, VSA, SA, LA).
 
-Output the complete exam paper in a printable format. Ensure correct mark distribution.
-`,
+Output the complete paper as printable text.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
