@@ -50,8 +50,13 @@
   }
 }
 
+.exam-paper-preview {
+  font-family: 'PT Sans', serif;
+  line-height: 1.8;
+  font-size: 1.15rem;
+}
+
 @media print {
-  /* Hide all UI elements that are not the paper content */
   .no-print, 
   header, 
   aside, 
@@ -92,21 +97,22 @@
 
   pre {
     color: black !important;
-    font-size: 12pt !important;
+    font-size: 13pt !important;
     white-space: pre-wrap !important;
     font-family: serif !important;
-    line-height: 1.6 !important;
+    line-height: 1.8 !important;
     border: none !important;
     background: transparent !important;
     width: 100% !important;
     overflow: visible !important;
+    padding: 0 !important;
+    margin-top: 20px !important;
   }
   
   .badge {
     display: none !important;
   }
 
-  /* Ensure the hidden print-only container is shown */
   .hidden.print\:block {
     display: block !important;
     width: 100% !important;
@@ -115,17 +121,8 @@
     position: static !important;
   }
 
-  /* Page break rules */
-  pre {
-    page-break-inside: auto;
-  }
-  
-  h2, h3 {
-    page-break-after: avoid;
-  }
-  
   @page {
-    margin: 2cm;
-    size: auto;
+    margin: 2.5cm;
+    size: A4;
   }
 }

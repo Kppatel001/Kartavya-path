@@ -25,7 +25,8 @@ import {
   EyeOff,
   Volume2,
   VolumeX,
-  Printer
+  Printer,
+  FileText
 } from 'lucide-react';
 import {
   Dialog,
@@ -50,6 +51,8 @@ import { socraticTutor } from '@/ai/flows/socratic-tutor-flow';
 import { gujaratiTTS } from '@/ai/flows/gujarati-tts-flow';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { gu } from 'date-fns/locale';
 
 const LINES_PER_PAGE = 45;
 const ANSWER_KEY_DELIMITER = "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---";
@@ -246,20 +249,26 @@ export default function PaperPage() {
   if (!paper) return null;
 
   const PaperHeader = () => (
-    <div className="mb-8 border-b-2 border-black pb-4 text-center">
-        {paper.settings.schoolLogo && (
-            <img src={paper.settings.schoolLogo} alt="Logo" className="mx-auto h-16 w-auto mb-2 object-contain" />
-        )}
-        <h2 className="text-2xl font-bold uppercase">{paper.settings.schoolName || 'પરીક્ષા પ્રશ્નપત્ર'}</h2>
-        <h3 className="text-lg font-semibold">{paper.settings.subject} - ધોરણ {paper.settings.classLevel}</h3>
-        <p className="text-sm italic">{paper.settings.board}</p>
-        <div className="mt-4 flex justify-between text-sm font-bold border-t border-black pt-2">
-            <div>સમય: {paper.settings.timeAllowed || '---'}</div>
-            <div>કુલ ગુણ: {paper.settings.totalMarks}</div>
+    <div className="mb-6 border-b-2 border-black pb-4 text-center">
+        <div className="flex justify-center items-center gap-4 mb-2">
+            {paper.settings.schoolLogo && (
+                <img src={paper.settings.schoolLogo} alt="Logo" className="h-14 w-auto object-contain" />
+            )}
+            <h2 className="text-2xl font-bold uppercase tracking-wide">{paper.settings.schoolName || 'પરીક્ષા પ્રશ્નપત્ર'}</h2>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-4 text-left border-t border-dashed border-black/30 pt-2 font-mono text-xs">
-            <div>નામ: _________________________________</div>
+        <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-sm font-bold border-t border-black pt-3">
+            <div className="text-left">વિષય: {paper.settings.subject}</div>
+            <div className="text-right">ધોરણ: {paper.settings.classLevel} ({paper.settings.board})</div>
+            <div className="text-left">તારીખ: {format(new Date(), 'dd/MM/yyyy')}</div>
+            <div className="text-right">કુલ ગુણ: {paper.settings.totalMarks}</div>
+            <div className="text-left">સમય: {paper.settings.timeAllowed || '---'}</div>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-4 text-left border-t border-dashed border-black/30 pt-3 font-mono text-xs">
+            <div>વિદ્યાર્થીનું નામ: _________________________________</div>
             <div>રોલ નં: __________________</div>
+        </div>
+        <div className="mt-3 text-center text-xs font-bold bg-black/5 py-1 uppercase tracking-widest border-y border-black">
+            સામાન્ય સૂચનાઓ: બધા પ્રશ્નો ફરજિયાત છે. જમણી બાજુના અંક ગુણ દર્શાવે છે.
         </div>
     </div>
   );
@@ -269,7 +278,7 @@ export default function PaperPage() {
       {/* Hidden container for printing the WHOLE content */}
       <div className="hidden print:block print:bg-white print:p-0 print:m-0 print:text-black w-full">
         <PaperHeader />
-        <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black border-none bg-transparent p-0 m-0">
+        <pre className="whitespace-pre-wrap font-serif text-lg leading-loose text-black border-none bg-transparent p-0 m-0">
           {getVisibleContent(content, showAnswerKey)}
         </pre>
       </div>
@@ -278,15 +287,25 @@ export default function PaperPage() {
         <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
         </Button>
-        <div className="flex justify-between items-start">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
-                <Badge variant="secondary" className="mt-1 bg-primary/10 text-primary">GSEB બોર્ડ માળખું</Badge>
+        <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                    <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
+                    <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ-માળખું: {paper.settings.board}</p>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => setChatOpen(true)}>
+                    <BrainCircuit className="mr-2 h-4 w-4" /> AI વિદ્યા ટ્યુટર
+                </Button>
             </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 no-print">
+      <div className="flex flex-wrap gap-2 no-print bg-card/40 p-3 rounded-xl border border-border/50 backdrop-blur-sm sticky top-20 z-10">
         {isEditing ? (
           <>
             <Button onClick={handleSave} disabled={isSaving}>
@@ -306,14 +325,16 @@ export default function PaperPage() {
           <>
             <Button variant="outline" onClick={() => setIsEditing(true)}>
               <Pencil className="mr-2 h-4 w-4" />
-              સુધારો કરો
+              સુધારો
             </Button>
-            <Button variant="default" onClick={handlePrint}>
+            <Button variant="default" onClick={handlePrint} className="bg-primary hover:bg-primary/90">
               <Printer className="mr-2 h-4 w-4" />
               પ્રિન્ટ કરો
             </Button>
           </>
         )}
+
+        <div className="w-px h-8 bg-border/50 mx-1 hidden sm:block" />
 
         <Button 
           variant={showAnswerKey ? "default" : "outline"} 
@@ -326,12 +347,12 @@ export default function PaperPage() {
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" disabled={isEditing}><Languages className="mr-2 h-4 w-4" /> અનુવાદ</Button>
+            <Button variant="outline" disabled={isEditing}><Languages className="mr-2 h-4 w-4" /> ભાષા</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>અનુવાદ કરો</DialogTitle>
-              <DialogDescription>કઈ ભાષામાં અનુવાદ કરવા માંગો છો?</DialogDescription>
+              <DialogDescription>કઈ ભાષામાં પેપર જોવા માંગો છો?</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <Select value={targetLanguage} onValueChange={setTargetLanguage}>
@@ -347,20 +368,16 @@ export default function PaperPage() {
               <DialogClose asChild>
                 <Button onClick={handleTranslate} disabled={isTranslating}>
                   {isTranslating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  શરૂ કરો
+                  અનુવાદ શરૂ કરો
                 </Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        <Button variant="secondary" onClick={handleSpeakConcept} disabled={isEditing}>
-          {isSpeaking ? <VolumeX className="mr-2 h-4 w-4" /> : <Volume2 className="mr-2 h-4 w-4" />}
-          {isSpeaking ? "અવાજ બંધ કરો" : "વિદ્યા AI સમજાવશે"}
-        </Button>
-
-        <Button variant="secondary" onClick={() => setChatOpen(true)} className="ml-auto">
-          <BrainCircuit className="mr-2 h-4 w-4" /> AI વિદ્યા ટ્યુટર
+        <Button variant="outline" onClick={handleSpeakConcept} disabled={isEditing}>
+          {isSpeaking ? <VolumeX className="mr-2 h-4 w-4" /> : <Volume2 className="mr-2 h-4 w-4 text-primary" />}
+          AI સમજાવશે
         </Button>
       </div>
       
@@ -368,25 +385,32 @@ export default function PaperPage() {
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6 no-print bg-background border-border"
+          className="min-h-[70vh] font-mono text-sm leading-relaxed p-6 no-print bg-background border-border shadow-inner"
         />
       ) : (
         <div className="space-y-4 no-print">
-          <div className="border rounded-lg p-10 bg-white shadow-xl min-h-[70vh] text-black overflow-hidden relative group">
+          <div className="border rounded-lg p-10 bg-white shadow-2xl min-h-[70vh] text-black overflow-hidden relative group exam-paper-preview">
             {currentPage === 1 && <PaperHeader />}
-            <pre className="whitespace-pre-wrap font-serif text-base leading-relaxed text-black">
+            <pre className="whitespace-pre-wrap font-serif text-lg leading-loose text-black mt-4">
               {pages[currentPage - 1] || 'કન્ટેન્ટ મળી શક્યું નથી.'}
             </pre>
-            <div className="absolute bottom-4 right-8 text-xs text-black/50 italic">
-              પેજ {currentPage} / {pages.length}
+            <div className="absolute bottom-4 right-8 text-xs text-black/40 italic font-mono">
+              - પેજ {currentPage} / {pages.length} -
             </div>
           </div>
           {pages.length > 1 && (
-            <div className="flex justify-center items-center gap-4">
+            <div className="flex justify-center items-center gap-4 py-4">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> અગાઉનું
               </Button>
-              <span className="text-sm font-medium">પેજ {currentPage} of {pages.length}</span>
+              <div className="flex items-center gap-1">
+                {pages.map((_, i) => (
+                    <div 
+                        key={i} 
+                        className={`h-1.5 w-1.5 rounded-full ${currentPage === i + 1 ? 'bg-primary w-4' : 'bg-border'} transition-all`} 
+                    />
+                ))}
+              </div>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(pages.length, p + 1))} disabled={currentPage === pages.length}>
                 આગળનું <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -397,25 +421,30 @@ export default function PaperPage() {
 
       {/* Socratic Tutor Floating Chat */}
       {chatOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-card border-2 border-primary shadow-2xl rounded-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4 no-print">
+        <div className="fixed bottom-6 right-6 w-[400px] h-[550px] bg-card border-2 border-primary/50 shadow-2xl rounded-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4 no-print">
           <div className="p-4 border-b bg-primary text-primary-foreground flex justify-between items-center rounded-t-xl">
             <div className="flex items-center gap-2">
-              <BrainCircuit className="h-5 w-5" />
-              <span className="font-bold">વિદ્યા AI ટ્યુટર</span>
+              <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                <BrainCircuit className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="font-bold block text-sm">વિદ્યા AI ટ્યુટર</span>
+                <span className="text-[10px] opacity-80">ગાઈડેડ લર્નિંગ મોડ</span>
+              </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setChatOpen(false)} className="hover:bg-primary-foreground/10">
+            <Button variant="ghost" size="icon" onClick={() => setChatOpen(false)} className="hover:bg-primary-foreground/10 h-8 w-8">
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-4 bg-muted/30">
             <div className="space-y-4">
-              <div className="bg-muted p-3 rounded-lg text-sm leading-relaxed">
-                નમસ્તે! હું **વિદ્યા AI** છું. આ પ્રશ્નપત્રમાં તમને ક્યાંય મુશ્કેલી છે? મને પૂછો, હું તમને વિચારવામાં મદદ કરીશ!
+              <div className="bg-white/5 border border-border p-3 rounded-2xl text-sm leading-relaxed shadow-sm">
+                નમસ્તે! હું **વિદ્યા AI** છું. આ પ્રશ્નપત્રમાં તમને ક્યાંય મુશ્કેલી છે? મને પૂછો, હું તમને સીધો જવાબ આપવાને બદલે વિચારવામાં મદદ કરીશ! 🧠
               </div>
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-xl text-sm ${
-                    msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border'
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
+                    msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-card border border-border rounded-tl-none'
                   }`}>
                     {msg.text}
                   </div>
@@ -423,20 +452,22 @@ export default function PaperPage() {
               ))}
               {isTutoring && (
                 <div className="flex justify-start">
-                  <div className="bg-muted p-3 rounded-xl">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <div className="bg-card p-3 rounded-2xl border border-border flex gap-1">
+                    <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce" />
+                    <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <span className="h-1.5 w-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
                   </div>
                 </div>
               )}
               <div ref={scrollRef} />
             </div>
           </ScrollArea>
-          <div className="p-4 border-t flex gap-2">
+          <div className="p-4 border-t bg-card rounded-b-xl flex gap-2">
             <Textarea
               value={currentQuery}
               onChange={(e) => setCurrentQuery(e.target.value)}
-              placeholder="તમારો પ્રશ્ન અહીં લખો..."
-              className="min-h-[40px] max-h-[80px] text-xs"
+              placeholder="તમારો પ્રશ્ન પૂછો..."
+              className="min-h-[44px] max-h-[100px] text-xs resize-none rounded-xl"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -444,8 +475,8 @@ export default function PaperPage() {
                 }
               }}
             />
-            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring || !currentQuery.trim()} className="shrink-0">
-              <Send className="h-4 w-4" />
+            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring || !currentQuery.trim()} className="shrink-0 h-11 w-11 rounded-xl shadow-lg">
+              <Send className="h-5 w-5" />
             </Button>
           </div>
         </div>

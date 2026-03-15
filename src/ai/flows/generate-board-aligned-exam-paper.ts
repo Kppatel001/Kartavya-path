@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to generate board-aligned exam papers for Gujarat Schools (GSEB focus).
@@ -49,24 +50,27 @@ Syllabus / Blueprint Details:
 {{{blueprintText}}}
 {{/if}}
 
-The exam paper must:
-- Strictly follow the official GSEB paper pattern for the specified class and subject.
-- Be entirely in the requested language (primary is Gujarati).
-- Include standard GSEB sections (e.g., Section A, B, C, D).
-- Ensure mark distribution is accurate to the total marks.
-- Include instructions like "બધા પ્રશ્નો ફરજિયાત છે" (All questions are compulsory).
-- Use terminology from GCERT/GSEB textbooks.
-- Provide clear questions for each section (MCQs, VSA, SA, LA).
+The exam paper must follow a clean, structured format:
 
-CRITICAL REQUIREMENT FOR ANSWER KEY:
-At the very end of the paper, after all questions, add a section called "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---". 
+1. STRUCTURE (GSEB Pattern):
+   - વિભાગ A (Section A): હેતુલક્ષી પ્રશ્નો (MCQs, True/False, Fill in the blanks) - 1 mark each.
+   - વિભાગ B (Section B): ટૂંક જવાબી પ્રશ્નો (Short Answer) - 2 marks each.
+   - વિભાગ C (Section C): સવિસ્તાર પ્રશ્નો (Descriptive) - 3 marks each.
+   - વિભાગ D (Section D): લાંબા પ્રશ્નો (Long Answer / Essays) - 4 or 5 marks each.
 
-In this section, provide the correct answers for all questions. 
-- For MCQs and VSA (1 mark): Provide the direct correct option or answer.
-- For SA and LA (2, 3, 4, or 5 marks): Provide the solution **step-by-step**. The explanation or derivation must be proportional to the marks assigned. For higher marks, provide a detailed breakdown of steps or points.
-- Ensure the language of the Answer Key matches the paper's language (Gujarati).
+2. FORMATTING RULES:
+   - Use clear headers for each section, e.g., "--- વિભાગ A ---".
+   - Under each section header, include a short instruction in Gujarati, e.g., "નીચેના પ્રશ્નોના માગ્યા મુજબ ઉત્તર આપો."
+   - Number each question clearly (1, 2, 3...).
+   - Ensure the marks distribution matches the totalMarks provided.
+   - Use standard GCERT/GSEB terminology.
+   - Ensure a clean line spacing between questions.
 
-Output the complete paper as printable text, including the questions first, followed by the detailed Answer Key section at the bottom.`,
+3. ANSWER KEY REQUIREMENT:
+   At the very end of the paper, add "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---".
+   Provide step-by-step solutions for Section B, C, and D based on marks.
+
+Output the content in শુદ્ધ Gujarati, with a structure that is easy to read and print.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
