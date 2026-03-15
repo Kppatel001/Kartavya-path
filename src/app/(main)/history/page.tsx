@@ -53,7 +53,10 @@ export default function HistoryPage() {
     }
   }, [user]);
 
-  const handleDelete = async (paperId: string) => {
+  const handleDelete = async (e: React.MouseEvent, paperId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
     if (deletingId) return;
 
     if (!confirm('શું તમે આ પ્રશ્નપત્ર કાયમ માટે કાઢી નાખવા માંગો છો?')) return;
@@ -61,7 +64,6 @@ export default function HistoryPage() {
     setDeletingId(paperId);
     try {
       await deletePaper(paperId);
-      // Immediately update local state to reflect deletion
       setPapers(prev => prev.filter(p => p.id !== paperId));
       toast({
         title: 'સફળતા',
@@ -113,8 +115,8 @@ export default function HistoryPage() {
                     variant="ghost" 
                     size="icon" 
                     disabled={deletingId === paper.id}
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0"
-                    onClick={() => handleDelete(paper.id)}
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0 z-10"
+                    onClick={(e) => handleDelete(e, paper.id)}
                     title="ડિલીટ કરો"
                   >
                     {deletingId === paper.id ? (

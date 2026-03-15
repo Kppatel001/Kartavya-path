@@ -6,6 +6,7 @@ import { getPapersForUser } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { BookOpen, Target, Zap, BrainCircuit, BarChart3, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
