@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge';
 export default function MainLayout({
   children,
 }: {
-  children: React.Node;
+  children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();

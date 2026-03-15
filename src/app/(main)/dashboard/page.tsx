@@ -5,14 +5,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { getPapersForUser } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import { 
   BookOpen, 
   Target, 
   Zap, 
   BrainCircuit, 
-  BarChart3, 
   ChevronRight, 
   AlertCircle,
   TrendingUp,
@@ -29,6 +26,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -169,82 +167,6 @@ export default function DashboardPage() {
                 <Activity className="mr-2 h-4 w-4" /> બધા નબળા ટોપિક્સ જુઓ
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-card/40 backdrop-blur-sm border-border/50 shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">તાજેતરની પ્રવૃત્તિ</CardTitle>
-              <CardDescription>તમારા દ્વારા બનાવેલા પ્રશ્નપત્રો</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/history" className="flex items-center">
-                બધા જુઓ <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => <div key={i} className="h-10 bg-muted/20 animate-pulse rounded" />)}
-              </div>
-            ) : papers.length === 0 ? (
-              <div className="text-center py-10 opacity-50">
-                <p className="text-sm italic">હજી સુધી કોઈ પ્રવૃત્તિ થઈ નથી. નવું પેપર બનાવીને શરૂઆત કરો!</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {papers.slice(0, 4).map((paper) => (
-                  <Link href={`/paper/${paper.id}`} key={paper.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/5 transition-colors group">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xs group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
-                      {paper.settings.classLevel}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none truncate">{paper.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {paper.settings.subject} • {paper.settings.totalMarks} ગુણ
-                      </p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/40 backdrop-blur-sm border-border/50 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-            <Zap className="h-32 w-32 text-primary" />
-          </div>
-          <CardHeader>
-            <CardTitle className="text-xl">વિદ્યા સાથે રિવિઝન</CardTitle>
-            <CardDescription>તમારી ભૂલોમાંથી શીખો અને યાદશક્તિ વધારો</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center text-accent">
-                <AlertCircle className="h-6 w-6" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-sm">ભૂલ ટ્રેકર (Mistake Tracker)</h4>
-                <p className="text-xs text-muted-foreground">તમારા ૨૪ ખોટા પડેલા પ્રશ્નોનું વિશ્લેષણ તૈયાર છે.</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Button className="w-full bg-accent hover:bg-accent/90 shadow-lg">
-                <Activity className="mr-2 h-4 w-4" /> રિવિઝન ક્વિઝ
-              </Button>
-              <Button variant="outline" className="w-full border-accent/20 hover:bg-accent/10">
-                ભૂલો જુઓ
-              </Button>
-            </div>
-            <p className="text-[10px] text-center text-muted-foreground italic">
-              "વિશ્લેષણ મુજબ, રિવિઝન ક્વિઝ લેવાથી યાદ રાખવાની ક્ષમતા ૩૫% વધે છે."
-            </p>
           </CardContent>
         </Card>
       </div>
