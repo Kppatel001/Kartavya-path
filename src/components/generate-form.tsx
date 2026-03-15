@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -165,11 +165,8 @@ export function GenerateForm() {
         schoolName: values.schoolName,
         timeAllowed: values.timeAllowed || "",
         blueprintText: values.blueprintText || "",
+        schoolLogo: schoolLogoDataUri || ""
       };
-
-      if (schoolLogoDataUri) {
-        paperSettings.schoolLogo = schoolLogoDataUri;
-      }
 
       const title = `${values.subject} - ધોરણ ${values.classLevel} (${values.board})`;
 
@@ -196,14 +193,14 @@ export function GenerateForm() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GraduationCap className="h-6 w-6 text-primary" />
-              નવું પ્રશ્નપત્ર બનાવો
+              નવું પ્રશ્નપત્ર તૈયાર કરો
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-6">
               <div className="flex items-center gap-2 border-b border-border pb-2">
                 <MapPin className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">શાળાની વિગતો</h3>
+                <h3 className="text-lg font-semibold">શાળાની વિગતો (UDISE+ મુજબ)</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -278,7 +275,6 @@ export function GenerateForm() {
                               setIsCustomSchoolMode(false);
                               form.setValue('schoolName', '');
                             }}
-                            title="લિસ્ટ પર પાછા જાઓ"
                           >
                             <X className="h-4 w-4" />
                           </Button>
