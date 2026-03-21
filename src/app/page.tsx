@@ -144,12 +144,12 @@ export default function LoginPage() {
             {isSignUp ? (
                 <>
                     પહેલેથી એકાઉન્ટ છે?{' '}
-                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(false)}>લોગિન કરો</Button>
+                    <button type="button" className="text-primary hover:underline" onClick={() => setIsSignUp(false)}>લોગિન કરો</button>
                 </>
             ) : (
                 <>
                     એકાઉન્ટ નથી?{' '}
-                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(true)}>સાઇન અપ કરો</Button>
+                    <button type="button" className="text-primary hover:underline" onClick={() => setIsSignUp(true)}>સાઇન અપ કરો</button>
                 </>
             )}
           </div>

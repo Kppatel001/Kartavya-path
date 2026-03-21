@@ -64,7 +64,7 @@ export default function DashboardPage() {
           નમસ્તે, {user?.displayName || 'વિદ્યાર્થી'} 👋
         </h1>
         <p className="text-muted-foreground text-lg">
-          તમારી પ્રગતિ અને વિદ્યાના સ્માર્ટ વિશ્લેષણ અહીં જોઈ શકાશે.
+          તમારી પ્રગતિની વિગતો અહીં જોઈ શકાશે.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : papers.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">GSEB આધારિત પ્રશ્નપત્રો</p>
+            <p className="text-xs text-muted-foreground mt-1">તમારા દ્વારા તૈયાર કરાયેલા પેપર્સ</p>
           </CardContent>
         </Card>
         <Card className="bg-accent/10 border-accent/20 shadow-lg group hover:scale-105 transition-transform">
@@ -118,7 +118,7 @@ export default function DashboardPage() {
               <TrendingUp className="h-5 w-5 text-primary" />
               વિષયવાર માસ્ટરી લેવલ
             </CardTitle>
-            <CardDescription>તમારા દ્વારા કરાયેલા રિવિઝન અને ટેસ્ટના આધારે</CardDescription>
+            <CardDescription>તમારી પોતાની પ્રગતિનું વિશ્લેષણ</CardDescription>
           </CardHeader>
           <CardContent className="h-[400px] w-full pt-4">
             {chartData.length > 0 ? (
@@ -146,7 +146,7 @@ export default function DashboardPage() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 <Inbox className="h-12 w-12 mb-4 opacity-20" />
-                <p>હજી સુધી કોઈ માસ્ટરી ડેટા ઉપલબ્ધ નથી.</p>
+                <p>હજી સુધી કોઈ ડેટા ઉપલબ્ધ નથી.</p>
                 <p className="text-sm">પ્રશ્નપત્રો તૈયાર કરો અને પ્રેક્ટિસ શરૂ કરો!</p>
               </div>
             )}
