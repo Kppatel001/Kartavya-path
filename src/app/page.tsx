@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -21,16 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { districtsOfGujarat, talukasByDistrict, classLevels } from '@/lib/data';
+import { districtsOfGujarat, classLevels } from '@/lib/data';
 
 const formSchema = z.object({
     name: z.string().min(2, { message: "નામ ઓછામાં ઓછું ૨ અક્ષરનું હોવું જોઈએ." }).optional(),
     email: z.string().email({ message: "કૃપા કરીને સાચું ઈમેલ એડ્રેસ લખો." }),
     password: z.string().min(6, { message: "પાસવર્ડ ઓછામાં ઓછો ૬ અક્ષરનો હોવો જોઈએ." }),
     role: z.enum(['teacher', 'student']).default('student'),
-    standard: z.string().min(1, { message: "ધોરણ પસંદ કરો." }).optional(),
-    school: z.string().min(2, { message: "શાળાનું નામ લખો." }).optional(),
-    district: z.string().min(1, { message: "જિલ્લો પસંદ કરો." }).optional(),
+    standard: z.string().optional(),
+    school: z.string().optional(),
+    district: z.string().optional(),
     taluka: z.string().optional(),
 });
 
@@ -54,9 +53,6 @@ export default function LoginPage() {
       taluka: "",
     },
   });
-
-  const selectedDistrict = form.watch('district');
-  const availableTalukas = selectedDistrict ? talukasByDistrict[selectedDistrict] || [] : [];
 
   useEffect(() => {
     if (user && !loading) {
@@ -86,7 +82,7 @@ export default function LoginPage() {
     } catch (error: any) {
         toast({
             variant: 'destructive',
-            title: 'લોગિન નિષ્ફળ',
+            title: isSignUp ? 'સાઇન-અપ નિષ્ફળ' : 'લોગિન નિષ્ફળ',
             description: error.message || 'ઈમેલ અથવા પાસવર્ડ ખોટો છે.',
         });
     } finally {
