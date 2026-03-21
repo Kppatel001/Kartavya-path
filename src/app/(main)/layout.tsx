@@ -22,7 +22,7 @@ import {
   LayoutDashboard, 
   ShieldCheck,
   Menu,
-  BrainCircuit
+  GraduationCap
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -55,7 +55,7 @@ export default function MainLayout({
           <SidebarHeader>
             <div className="flex items-center gap-2 p-4">
               <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shrink-0">
-                <BrainCircuit className="h-6 w-6 text-white" />
+                <GraduationCap className="h-6 w-6 text-white" />
               </div>
               <span className="font-headline text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden whitespace-nowrap overflow-hidden text-ellipsis text-white">કર્તવ્ય પથ</span>
             </div>

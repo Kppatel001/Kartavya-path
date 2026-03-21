@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
-import { Loader2 } from 'lucide-react';
+import { Loader2, GraduationCap, School } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
   if (loading || (user && !isSubmitting)) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
@@ -100,13 +100,13 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 py-12">
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-md shadow-2xl bg-card border-border">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <Logo className="h-8 w-8" />
+            <GraduationCap className="h-8 w-8" />
           </div>
-          <CardTitle className="font-headline text-3xl">કર્તવ્ય પથ</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-headline text-3xl text-white">કર્તવ્ય પથ</CardTitle>
+          <CardDescription className="text-muted-foreground">
             {isSignUp ? 'નવું એકાઉન્ટ બનાવો' : 'તમારા એકાઉન્ટમાં લોગિન કરો'}
           </CardDescription>
         </CardHeader>
@@ -122,7 +122,7 @@ export default function LoginPage() {
                       <FormItem>
                         <FormLabel>પૂરું નામ</FormLabel>
                         <FormControl>
-                          <Input placeholder="તમારું નામ" {...field} />
+                          <Input placeholder="તમારું નામ" {...field} className="bg-background" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -136,7 +136,7 @@ export default function LoginPage() {
                         <FormLabel>તમે કોણ છો?</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-background">
                               <SelectValue placeholder="પસંદ કરો" />
                             </SelectTrigger>
                           </FormControl>
@@ -158,7 +158,7 @@ export default function LoginPage() {
                           <FormLabel>ધોરણ</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="bg-background">
                                 <SelectValue placeholder="ધોરણ" />
                               </SelectTrigger>
                             </FormControl>
@@ -180,7 +180,7 @@ export default function LoginPage() {
                           <FormLabel>જિલ્લો</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="bg-background">
                                 <SelectValue placeholder="જિલ્લો" />
                               </SelectTrigger>
                             </FormControl>
@@ -202,7 +202,7 @@ export default function LoginPage() {
                       <FormItem>
                         <FormLabel>શાળાનું નામ</FormLabel>
                         <FormControl>
-                          <Input placeholder="તમારી શાળા" {...field} />
+                          <Input placeholder="તમારી શાળા" {...field} className="bg-background" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -218,7 +218,7 @@ export default function LoginPage() {
                   <FormItem>
                      <FormLabel>ઈમેલ</FormLabel>
                     <FormControl>
-                      <Input autoComplete="email" placeholder="name@example.com" {...field} />
+                      <Input autoComplete="email" placeholder="name@example.com" {...field} className="bg-background" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -231,7 +231,7 @@ export default function LoginPage() {
                   <FormItem>
                      <FormLabel>પાસવર્ડ</FormLabel>
                     <FormControl>
-                      <Input autoComplete={isSignUp ? 'new-password' : 'current-password'} type="password" placeholder="••••••••" {...field} />
+                      <Input autoComplete={isSignUp ? 'new-password' : 'current-password'} type="password" placeholder="••••••••" {...field} className="bg-background" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,26 +240,26 @@ export default function LoginPage() {
               <div className="flex flex-col space-y-2 pt-2">
                  <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full bg-primary hover:bg-primary/90"
                     disabled={isSubmitting}
                 >
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     {isSignUp ? 'એકાઉન્ટ બનાવો' : 'સાઇન ઇન'}
                 </Button>
               </div>
             </form>
           </Form>
 
-          <div className="text-center text-sm text-muted-foreground mt-4">
+          <div className="text-center text-sm text-muted-foreground mt-6">
             {isSignUp ? (
                 <>
                     પહેલેથી એકાઉન્ટ છે?{' '}
-                    <button type="button" className="text-primary hover:underline" onClick={() => setIsSignUp(false)}>લોગિન કરો</button>
+                    <button type="button" className="text-primary hover:underline font-bold" onClick={() => setIsSignUp(false)}>લોગિન કરો</button>
                 </>
             ) : (
                 <>
                     એકાઉન્ટ નથી?{' '}
-                    <button type="button" className="text-primary hover:underline" onClick={() => setIsSignUp(true)}>સાઇન અપ કરો</button>
+                    <button type="button" className="text-primary hover:underline font-bold" onClick={() => setIsSignUp(true)}>સાઇન અપ કરો</button>
                 </>
             )}
           </div>
