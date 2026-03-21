@@ -40,21 +40,21 @@ import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, Plus } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, Plus, Clock } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
   state: z.string().default('Gujarat'),
-  district: z.string().min(1, 'જિલ્લો પસંદ કરો.'),
-  taluka: z.string().optional(),
-  board: z.string().min(1, 'બોર્ડ પસંદ કરો.'),
-  classLevel: z.string().min(1, 'ધોરણ પસંદ કરો.'),
-  subject: z.string().min(1, 'વિષય પસંદ કરો.'),
-  chapters: z.string().min(1, 'પ્રકરણોના નામ લખો.'),
-  totalMarks: z.coerce.number().min(10, 'કુલ ગુણ ઓછામાં ઓછા 10 હોવા જોઈએ.').max(100, 'કુલ ગુણ 100 થી વધુ ન હોઈ શકે.'),
-  language: z.string().min(1, 'ભાષા પસંદ કરો.'),
-  schoolName: z.string().min(1, 'શાળાનું નામ લખો અથવા પસંદ કરો.'),
-  timeAllowed: z.string().optional(),
+  district: z.string().min(1, 'જિલ્લો પસંદ કરવો ફરજિયાત છે.'),
+  taluka: z.string().min(1, 'તાલુકો પસંદ કરવો ફરજિયાત છે.'),
+  board: z.string().min(1, 'બોર્ડ પસંદ કરવું ફરજિયાત છે.'),
+  classLevel: z.string().min(1, 'ધોરણ પસંદ કરવું ફરજિયાત છે.'),
+  subject: z.string().min(1, 'વિષય પસંદ કરવો ફરજિયાત છે.'),
+  chapters: z.string().min(1, 'ઓછામાં ઓછા એક પ્રકરણનું નામ લખવું ફરજિયાત છે.'),
+  totalMarks: z.coerce.number().min(1, 'કુલ ગુણ લખવા ફરજિયાત છે.').max(100, 'કુલ ગુણ 100 થી વધુ ન હોઈ શકે.'),
+  language: z.string().min(1, 'ભાષા પસંદ કરવી ફરજિયાત છે.'),
+  schoolName: z.string().min(1, 'શાળાનું નામ લખવું ફરજિયાત છે.'),
+  timeAllowed: z.string().min(1, 'સમય મર્યાદા લખવી ફરજિયાત છે.'),
   blueprintText: z.string().optional(),
 });
 
@@ -155,7 +155,7 @@ export function GenerateForm() {
       const paperSettings: ExamPaperSettings = {
         state: values.state,
         district: values.district,
-        taluka: values.taluka || "",
+        taluka: values.taluka,
         board: values.board,
         classLevel: values.classLevel,
         subject: values.subject,
@@ -163,7 +163,7 @@ export function GenerateForm() {
         totalMarks: values.totalMarks,
         language: values.language,
         schoolName: values.schoolName,
-        timeAllowed: values.timeAllowed || "",
+        timeAllowed: values.timeAllowed,
         blueprintText: values.blueprintText || "",
         schoolLogo: schoolLogoDataUri || ""
       };
@@ -200,7 +200,7 @@ export function GenerateForm() {
             <div className="space-y-6">
               <div className="flex items-center gap-2 border-b border-border pb-2">
                 <MapPin className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">શાળાની વિગતો (UDISE+ મુજબ)</h3>
+                <h3 className="text-lg font-semibold">શાળાની વિગતો (ફરજિયાત)</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -209,7 +209,7 @@ export function GenerateForm() {
                   name="district"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>જિલ્લો</FormLabel>
+                      <FormLabel className="flex items-center gap-1">જિલ્લો <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={(val) => {
                         field.onChange(val);
                         form.setValue('taluka', '');
@@ -235,7 +235,7 @@ export function GenerateForm() {
                   name="taluka"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>તાલુકો / શહેર</FormLabel>
+                      <FormLabel className="flex items-center gap-1">તાલુકો / શહેર <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrict}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="તાલુકો પસંદ કરો" /></SelectTrigger>
@@ -256,7 +256,7 @@ export function GenerateForm() {
                   name="schoolName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>શાળાનું નામ</FormLabel>
+                      <FormLabel className="flex items-center gap-1">શાળાનું નામ <span className="text-destructive">*</span></FormLabel>
                       {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
@@ -314,32 +314,13 @@ export function GenerateForm() {
                     </FormItem>
                   )}
                 />
-
-                <div className="flex flex-col gap-2">
-                    <FormLabel>શાળાનો લોગો (ઓપ્શનલ)</FormLabel>
-                    <div className="flex items-center gap-4">
-                        <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
-                        {schoolLogoDataUri ? (
-                            <div className="relative h-10 w-10 border rounded overflow-hidden group border-primary">
-                                <img src={schoolLogoDataUri} alt="Logo" className="h-full w-full object-contain" />
-                                <button type="button" onClick={() => setSchoolLogoDataUri(null)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                    <X className="h-4 w-4 text-white" />
-                                </button>
-                            </div>
-                        ) : (
-                            <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} className="bg-background">
-                                <ImageIcon className="mr-2 h-4 w-4" /> લોગો ઉમેરો
-                            </Button>
-                        )}
-                    </div>
-                </div>
               </div>
             </div>
 
             <div className="space-y-6 pt-4 border-t border-border">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">પરીક્ષાની વિગતો</h3>
+                <h3 className="text-lg font-semibold">પરીક્ષાની વિગતો (ફરજિયાત)</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -348,7 +329,7 @@ export function GenerateForm() {
                   name="board"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>બોર્ડ</FormLabel>
+                      <FormLabel className="flex items-center gap-1">બોર્ડ <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="બોર્ડ પસંદ કરો" /></SelectTrigger>
@@ -368,7 +349,7 @@ export function GenerateForm() {
                   name="classLevel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ધોરણ</FormLabel>
+                      <FormLabel className="flex items-center gap-1">ધોરણ <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="ધોરણ પસંદ કરો" /></SelectTrigger>
@@ -388,7 +369,7 @@ export function GenerateForm() {
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>વિષય</FormLabel>
+                      <FormLabel className="flex items-center gap-1">વિષય <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="વિષય પસંદ કરો" /></SelectTrigger>
@@ -408,7 +389,7 @@ export function GenerateForm() {
                   name="totalMarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>કુલ ગુણ</FormLabel>
+                      <FormLabel className="flex items-center gap-1">કુલ ગુણ <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="દા.ત., 80" {...field} value={field.value ?? ''} className="bg-background" />
                       </FormControl>
@@ -421,7 +402,7 @@ export function GenerateForm() {
                   name="timeAllowed"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>સમય મર્યાદા</FormLabel>
+                      <FormLabel className="flex items-center gap-1">સમય મર્યાદા <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input placeholder="દા.ત., 3 કલાક" {...field} className="bg-background" />
                       </FormControl>
@@ -434,7 +415,7 @@ export function GenerateForm() {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>પેપરની ભાષા</FormLabel>
+                      <FormLabel className="flex items-center gap-1">પેપરની ભાષા <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-background"><SelectValue placeholder="ભાષા પસંદ કરો" /></SelectTrigger>
@@ -455,7 +436,7 @@ export function GenerateForm() {
                     name="chapters"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>પ્રકરણો / ટોપિક્સ</FormLabel>
+                        <FormLabel className="flex items-center gap-1">પ્રકરણો / ટોપિક્સ <span className="text-destructive">*</span></FormLabel>
                         <FormControl>
                           <Input placeholder="દા.ત., બીજગણિત, ભૂમિતિ, આંકડાશાસ્ત્ર" {...field} className="bg-background" />
                         </FormControl>
@@ -549,3 +530,4 @@ export function GenerateForm() {
     </Card>
   );
 }
+
