@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Loader2, Mail, Lock, User, School, MapPin, ChevronRight } from 'lucide-react';
 import { districtsOfGujarat, classLevels, talukasByDistrict } from '@/lib/data';
