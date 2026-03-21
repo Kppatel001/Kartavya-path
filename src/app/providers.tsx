@@ -3,7 +3,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/firebase';
-import { signOut, signInWithEmail, signUpWithEmail } from '@/lib/firebase/auth';
+import { signOut, signInWithEmail, signUpWithEmail, resetPassword } from '@/lib/firebase/auth';
 import type { UserRole } from '@/types';
 
 export interface AuthContextType {
@@ -21,6 +21,7 @@ export interface AuthContextType {
     district: string,
     taluka: string
   ) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,12 +64,17 @@ export function Providers({ children }: { children: ReactNode }) {
     await signUpWithEmail(email, password, name, role, standard, school, district, taluka);
   }
 
+  const handleResetPassword = async (email: string) => {
+    await resetPassword(email);
+  }
+
   const value = {
     user,
     loading,
     signOut: handleSignOut,
     signInWithEmail: handleSignInWithEmail,
     signUpWithEmail: handleSignUpWithEmail,
+    resetPassword: handleResetPassword,
   };
 
   return (

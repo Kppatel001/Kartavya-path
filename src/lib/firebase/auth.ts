@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
   type AuthError
 } from 'firebase/auth';
 import { auth } from './firebase';
@@ -14,7 +15,6 @@ export const signInWithEmail = async (email: string, password: string): Promise<
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch(error: any) {
-      console.error("Error signing in with email: ", error);
       const authError = error as AuthError;
       if (authError.code === 'auth/invalid-credential' || authError.code === 'auth/user-not-found' || authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-email') {
         throw new Error('ઈમેલ અથવા પાસવર્ડ ખોટો છે. કૃપા કરીને ફરી પ્રયાસ કરો.');
@@ -53,10 +53,9 @@ export const signUpWithEmail = async (
         });
       }
     } catch(error: any) {
-      console.error("Error signing up with email: ", error);
       const authError = error as AuthError;
       if (authError.code === 'auth/email-already-in-use') {
-        throw new Error('આ ઈમેલ પહેલેથી વપરાશમાં છે. કૃપા કરીને બીજા ઈમેલનો ઉપયોગ કરો અથવા લોગિન કરો.');
+        throw new Error('આ ઈમેલ પહેલેથી વપરાશમાં છે. કૃપા કરીને લોગિન કરો.');
       } else if (authError.code === 'auth/weak-password') {
         throw new Error('પાસવર્ડ ઓછામાં ઓછો ૬ અક્ષરનો હોવો જોઈએ.');
       } else if (authError.code === 'auth/invalid-email') {
@@ -64,6 +63,15 @@ export const signUpWithEmail = async (
       }
       throw new Error(error.message || 'સાઇન-અપ દરમિયાન સમસ્યા આવી છે.');
     }
+};
+
+export const resetPassword = async (email: string): Promise<void> => {
+  if (!auth) throw new Error("Firebase is not configured.");
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error: any) {
+    throw new Error('પાસવર્ડ રીસેટ ઈમેલ મોકલવામાં ભૂલ આવી છે.');
+  }
 };
 
 export const signOut = async () => {
