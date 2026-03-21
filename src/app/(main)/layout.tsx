@@ -97,7 +97,7 @@ export default function MainLayout({
                     <ShieldCheck className="text-accent h-5 w-5" />
                     <span className="font-medium">ફોકસ મોડ</span>
                   </a>
-                </SidebarMenuItem>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
