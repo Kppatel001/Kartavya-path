@@ -1,10 +1,11 @@
 'use client';
 
+import * as React from 'react';
 import { useEffect, useState, useTransition, useRef } from 'react';
 import { getPaper, updatePaperContent } from '@/lib/firebase/firestore';
 import type { ExamPaper } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,9 +55,8 @@ import { format } from 'date-fns';
 const LINES_PER_PAGE = 45;
 const ANSWER_KEY_DELIMITER = "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---";
 
-export default function PaperPage() {
-  const params = useParams();
-  const id = params?.id as string;
+export default function PaperPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
