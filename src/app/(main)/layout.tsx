@@ -72,7 +72,7 @@ export default function MainLayout({
               </SidebarMenuItem>
               
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="નવું પેપર તૈયાર કરો" className="h-11">
+                <SidebarMenuButton asChild tooltip="પેપર તૈયાર કરો" className="h-11">
                   <a href="/generate">
                     <FilePlus2 className="text-primary h-5 w-5" />
                     <span className="font-medium">પેપર તૈયાર કરો</span>

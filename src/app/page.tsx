@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
-import { Icons } from '@/components/icons';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
@@ -22,7 +21,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const { user, loading, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const { user, loading, signInWithEmail, signUpWithEmail } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,30 +151,6 @@ export default function LoginPage() {
                 </>
             )}
           </div>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">અથવા</span>
-            </div>
-          </div>
-          
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={signInWithGoogle}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Icons.google className="mr-3 h-6 w-6" />
-            )}
-            Google સાથે લોગિન કરો
-          </Button>
-
         </CardContent>
       </Card>
     </div>
