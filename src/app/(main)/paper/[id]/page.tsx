@@ -361,7 +361,7 @@ export default function PaperPage() {
         </div>
       )}
 
-      {/* Socratic Tutor Floating Chat */}
+      {/* Tutor Floating Chat */}
       <Button 
         variant="secondary" 
         onClick={() => setChatOpen(true)}
