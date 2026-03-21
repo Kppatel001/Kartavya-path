@@ -27,8 +27,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Loader2, Mail, Lock, User, School, MapPin, ChevronRight } from 'lucide-react';
+import { GraduationCap, Loader2, Mail, Lock, User, School, MapPin, ChevronRight, BookOpen, UserCircle } from 'lucide-react';
 import { districtsOfGujarat, classLevels, talukasByDistrict } from '@/lib/data';
+import { Separator } from '@/components/ui/separator';
 
 const loginSchema = z.object({
   email: z.string().email('સાચું ઈમેલ એડ્રેસ લખો.'),
@@ -142,40 +143,42 @@ export default function AuthPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent rounded-full blur-[120px]" />
       </div>
 
-      <div className="w-full max-w-md space-y-8 relative z-10">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary shadow-xl mb-4">
-            <GraduationCap className="h-10 w-10 text-white" />
+      <div className="w-full max-w-lg space-y-8 relative z-10">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center p-4 rounded-3xl bg-primary shadow-2xl shadow-primary/20 mb-2">
+            <GraduationCap className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight font-headline text-white">કર્તવ્ય પથ</h1>
-          <p className="text-muted-foreground">GSEB ના ધોરણ મુજબ પ્રશ્નપત્ર અને પ્રગતિ ટ્રેકર</p>
+          <div className="space-y-1">
+            <h1 className="text-5xl font-black tracking-tight font-headline text-white">કર્તવ્ય પથ</h1>
+            <p className="text-muted-foreground text-lg">GSEB ના ધોરણ મુજબ પ્રશ્નપત્ર અને પ્રગતિ ટ્રેકર</p>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8 bg-card/50 backdrop-blur-sm border border-border/50">
-            <TabsTrigger value="login">લોગિન</TabsTrigger>
-            <TabsTrigger value="signup">સાઇન-અપ</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/5 backdrop-blur-xl border border-white/10 p-1 h-14 rounded-2xl">
+            <TabsTrigger value="login" className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-base font-bold">લોગિન</TabsTrigger>
+            <TabsTrigger value="signup" className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-base font-bold">સાઇન-અપ</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="login">
-            <Card className="border-border/50 bg-card/40 backdrop-blur-md shadow-2xl">
-              <CardHeader>
-                <CardTitle>સ્વાગત છે!</CardTitle>
-                <CardDescription>તમારા એકાઉન્ટમાં લોગિન કરો</CardDescription>
+          <TabsContent value="login" className="animate-in fade-in zoom-in-95 duration-300">
+            <Card className="border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl rounded-3xl overflow-hidden">
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-3xl font-bold">સ્વાગત છે!</CardTitle>
+                <CardDescription className="text-base">તમારા એકાઉન્ટમાં લોગિન કરો</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-5">
                     <FormField
                       control={loginForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>ઈમેલ</FormLabel>
+                          <FormLabel className="text-white/80">ઈમેલ</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input placeholder="example@gmail.com" className="pl-10" {...field} />
+                            <div className="relative group">
+                              <Mail className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input placeholder="example@gmail.com" className="pl-12 h-12 bg-white/5 border-white/10 focus:border-primary focus:ring-primary rounded-xl" {...field} />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -187,56 +190,59 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>પાસવર્ડ</FormLabel>
+                          <FormLabel className="text-white/80">પાસવર્ડ</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input type="password" placeholder="••••••" className="pl-10" {...field} />
+                            <div className="relative group">
+                              <Lock className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input type="password" placeholder="••••••••" className="pl-12 h-12 bg-white/5 border-white/10 focus:border-primary focus:ring-primary rounded-xl" {...field} />
                             </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full h-12 text-lg shadow-lg" disabled={isPending}>
-                      {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ChevronRight className="mr-2 h-5 w-5" />}
+                    <Button type="submit" className="w-full h-14 text-xl font-bold shadow-2xl shadow-primary/30 rounded-xl mt-4" disabled={isPending}>
+                      {isPending ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : <ChevronRight className="mr-2 h-6 w-6" />}
                       લોગિન કરો
                     </Button>
                   </form>
                 </Form>
               </CardContent>
-              <CardFooter className="flex flex-col gap-4 border-t border-border/20 pt-6">
-                <Button variant="link" className="text-sm text-primary" onClick={handleForgotPassword}>
+              <CardFooter className="flex flex-col gap-4 border-t border-white/5 pt-6 pb-8">
+                <Button variant="link" className="text-base text-primary/80 hover:text-primary" onClick={handleForgotPassword}>
                   પાસવર્ડ ભૂલી ગયા છો?
                 </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  એકાઉન્ટ નથી? <button onClick={() => setActiveTab('signup')} className="text-primary font-bold hover:underline">સાઇન-અપ કરો</button>
+                <p className="text-sm text-center text-muted-foreground">
+                  એકાઉન્ટ નથી? <button onClick={() => setActiveTab('signup')} className="text-primary font-black hover:underline ml-1">સાઇન-અપ કરો</button>
                 </p>
               </CardFooter>
             </Card>
           </TabsContent>
 
-          <TabsContent value="signup">
-            <Card className="border-border/50 bg-card/40 backdrop-blur-md shadow-2xl overflow-hidden">
-              <ScrollArea className="max-h-[70vh]">
-                <CardHeader>
-                  <CardTitle>નવું એકાઉન્ટ બનાવો</CardTitle>
-                  <CardDescription>GSEB શિક્ષકો અને વિદ્યાર્થીઓ માટે</CardDescription>
+          <TabsContent value="signup" className="animate-in fade-in zoom-in-95 duration-300">
+            <Card className="border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl rounded-3xl overflow-hidden">
+              <ScrollArea className="h-[65vh] w-full">
+                <CardHeader className="text-center pb-2">
+                  <CardTitle className="text-3xl font-bold">નવું એકાઉન્ટ બનાવો</CardTitle>
+                  <CardDescription className="text-base">GSEB શિક્ષકો અને વિદ્યાર્થીઓ માટે</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <Form {...signupForm}>
-                    <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                    <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                          <UserCircle className="h-4 w-4" /> પાયાની વિગતો
+                        </div>
                         <FormField
                           control={signupForm.control}
                           name="name"
                           render={({ field }) => (
-                            <FormItem className="col-span-2">
-                              <FormLabel>પૂર્ણ નામ</FormLabel>
+                            <FormItem>
+                              <FormLabel className="text-white/80">પૂર્ણ નામ</FormLabel>
                               <FormControl>
-                                <div className="relative">
-                                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input placeholder="તમારું નામ" className="pl-10" {...field} />
+                                <div className="relative group">
+                                  <User className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                  <Input placeholder="તમારું નામ" className="pl-12 h-12 bg-white/5 border-white/10 rounded-xl" {...field} />
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -247,12 +253,12 @@ export default function AuthPage() {
                           control={signupForm.control}
                           name="email"
                           render={({ field }) => (
-                            <FormItem className="col-span-2">
-                              <FormLabel>ઈમેલ</FormLabel>
+                            <FormItem>
+                              <FormLabel className="text-white/80">ઈમેલ</FormLabel>
                               <FormControl>
-                                <div className="relative">
-                                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input placeholder="example@gmail.com" className="pl-10" {...field} />
+                                <div className="relative group">
+                                  <Mail className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                  <Input placeholder="example@gmail.com" className="pl-12 h-12 bg-white/5 border-white/10 rounded-xl" {...field} />
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -263,123 +269,139 @@ export default function AuthPage() {
                           control={signupForm.control}
                           name="password"
                           render={({ field }) => (
-                            <FormItem className="col-span-2">
-                              <FormLabel>પાસવર્ડ</FormLabel>
+                            <FormItem>
+                              <FormLabel className="text-white/80">પાસવર્ડ</FormLabel>
                               <FormControl>
-                                <div className="relative">
-                                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input type="password" placeholder="••••••" className="pl-10" {...field} />
+                                <div className="relative group">
+                                  <Lock className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                  <Input type="password" placeholder="••••••••" className="pl-12 h-12 bg-white/5 border-white/10 rounded-xl" {...field} />
                                 </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                      </div>
+
+                      <Separator className="bg-white/5" />
+
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                          <BookOpen className="h-4 w-4" /> શૈક્ષણિક વિગતો
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={signupForm.control}
+                            name="role"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-white/80">ભૂમિકા</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl"><SelectValue placeholder="પસંદ કરો" /></SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="student">વિદ્યાર્થી</SelectItem>
+                                    <SelectItem value="teacher">શિક્ષક</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={signupForm.control}
+                            name="standard"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-white/80">ધોરણ</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl"><SelectValue placeholder="ધોરણ" /></SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {classLevels.map(l => <SelectItem key={l} value={l}>ધોરણ {l}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                         <FormField
                           control={signupForm.control}
-                          name="role"
+                          name="school"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>તમે કોણ છો?</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger><SelectValue placeholder="પસંદ કરો" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="student">વિદ્યાર્થી</SelectItem>
-                                  <SelectItem value="teacher">શિક્ષક</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signupForm.control}
-                          name="standard"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>ધોરણ</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger><SelectValue placeholder="ધોરણ" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {classLevels.map(l => <SelectItem key={l} value={l}>ધોરણ {l}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
+                              <FormLabel className="text-white/80">શાળાનું નામ</FormLabel>
+                              <FormControl>
+                                <div className="relative group">
+                                  <School className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                  <Input placeholder="શાળાનું નામ લખો" className="pl-12 h-12 bg-white/5 border-white/10 rounded-xl" {...field} />
+                                </div>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
 
-                      <FormField
-                        control={signupForm.control}
-                        name="school"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>શાળાનું નામ</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <School className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="શાળાનું નામ લખો" className="pl-10" {...field} />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <Separator className="bg-white/5" />
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={signupForm.control}
-                          name="district"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>જિલ્લો</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger><SelectValue placeholder="જિલ્લો" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {districtsOfGujarat.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signupForm.control}
-                          name="taluka"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>તાલુકો</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedDistrict}>
-                                <FormControl>
-                                  <SelectTrigger><SelectValue placeholder="તાલુકો" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {availableTalukas.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                          <MapPin className="h-4 w-4" /> રહેઠાણની વિગતો
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={signupForm.control}
+                            name="district"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-white/80">જિલ્લો</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl"><SelectValue placeholder="જિલ્લો" /></SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {districtsOfGujarat.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={signupForm.control}
+                            name="taluka"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-white/80">તાલુકો</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedDistrict}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl"><SelectValue placeholder="તાલુકો" /></SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {availableTalukas.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
 
-                      <Button type="submit" className="w-full h-12 text-lg shadow-lg mt-4" disabled={isPending}>
-                        {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "એકાઉન્ટ બનાવો"}
+                      <Button type="submit" className="w-full h-14 text-xl font-bold shadow-2xl shadow-primary/30 rounded-xl mt-6 mb-4" disabled={isPending}>
+                        {isPending ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : "એકાઉન્ટ બનાવો"}
                       </Button>
                     </form>
                   </Form>
                 </CardContent>
               </ScrollArea>
-              <CardFooter className="border-t border-border/20 pt-4 pb-6">
-                <p className="text-xs text-center w-full text-muted-foreground">
-                  પહેલેથી એકાઉન્ટ છે? <button onClick={() => setActiveTab('login')} className="text-primary font-bold hover:underline">લોગિન કરો</button>
+              <CardFooter className="border-t border-white/5 pt-6 pb-8">
+                <p className="text-sm text-center w-full text-muted-foreground">
+                  પહેલેથી એકાઉન્ટ છે? <button onClick={() => setActiveTab('login')} className="text-primary font-black hover:underline ml-1">લોગિન કરો</button>
                 </p>
               </CardFooter>
             </Card>
