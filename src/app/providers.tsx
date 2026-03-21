@@ -3,15 +3,24 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/firebase';
-import { signInWithGoogle, signOut, signInWithEmail, signUpWithEmail } from '@/lib/firebase/auth';
+import { signOut, signInWithEmail, signUpWithEmail } from '@/lib/firebase/auth';
+import type { UserRole } from '@/types';
 
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (email: string, pass: string, name?: string) => Promise<void>;
+  signUpWithEmail: (
+    email: string, 
+    pass: string, 
+    name: string,
+    role: UserRole,
+    standard: string,
+    school: string,
+    district: string,
+    taluka: string
+  ) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,10 +42,6 @@ export function Providers({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const handleSignInWithGoogle = async () => {
-    await signInWithGoogle();
-  };
-
   const handleSignOut = async () => {
     await signOut();
   };
@@ -45,14 +50,22 @@ export function Providers({ children }: { children: ReactNode }) {
     await signInWithEmail(email, password);
   }
   
-  const handleSignUpWithEmail = async (email: string, password: string, name?: string) => {
-    await signUpWithEmail(email, password, name);
+  const handleSignUpWithEmail = async (
+    email: string, 
+    password: string, 
+    name: string,
+    role: UserRole,
+    standard: string,
+    school: string,
+    district: string,
+    taluka: string
+  ) => {
+    await signUpWithEmail(email, password, name, role, standard, school, district, taluka);
   }
 
   const value = {
     user,
     loading,
-    signInWithGoogle: handleSignInWithGoogle,
     signOut: handleSignOut,
     signInWithEmail: handleSignInWithEmail,
     signUpWithEmail: handleSignUpWithEmail,

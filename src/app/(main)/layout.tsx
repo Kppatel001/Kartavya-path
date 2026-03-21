@@ -110,7 +110,7 @@ export default function MainLayout({
                 <Menu className="h-6 w-6 text-primary" />
               </SidebarTrigger>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn("border-primary/20 bg-primary/5 text-primary hidden xs:inline-flex")}>GSEB STD 10</Badge>
+                <Badge variant="outline" className={cn("border-primary/20 bg-primary/5 text-primary hidden xs:inline-flex")}>GSEB</Badge>
                 <p className="text-sm font-bold text-foreground truncate max-w-[150px] sm:max-w-none">કર્તવ્ય પથ</p>
               </div>
             </div>

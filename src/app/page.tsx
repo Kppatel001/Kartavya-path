@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -13,11 +14,24 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { districtsOfGujarat, talukasByDistrict, classLevels } from '@/lib/data';
 
 const formSchema = z.object({
     name: z.string().min(2, { message: "નામ ઓછામાં ઓછું ૨ અક્ષરનું હોવું જોઈએ." }).optional(),
     email: z.string().email({ message: "કૃપા કરીને સાચું ઈમેલ એડ્રેસ લખો." }),
     password: z.string().min(6, { message: "પાસવર્ડ ઓછામાં ઓછો ૬ અક્ષરનો હોવો જોઈએ." }),
+    role: z.enum(['teacher', 'student']).default('student'),
+    standard: z.string().min(1, { message: "ધોરણ પસંદ કરો." }).optional(),
+    school: z.string().min(2, { message: "શાળાનું નામ લખો." }).optional(),
+    district: z.string().min(1, { message: "જિલ્લો પસંદ કરો." }).optional(),
+    taluka: z.string().optional(),
 });
 
 export default function LoginPage() {
@@ -33,8 +47,16 @@ export default function LoginPage() {
       name: "",
       email: "",
       password: "",
+      role: "student",
+      standard: "",
+      school: "",
+      district: "",
+      taluka: "",
     },
   });
+
+  const selectedDistrict = form.watch('district');
+  const availableTalukas = selectedDistrict ? talukasByDistrict[selectedDistrict] || [] : [];
 
   useEffect(() => {
     if (user && !loading) {
@@ -46,7 +68,16 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
         if (isSignUp) {
-            await signUpWithEmail(values.email, values.password, values.name);
+            await signUpWithEmail(
+              values.email, 
+              values.password, 
+              values.name || "",
+              values.role,
+              values.standard || "",
+              values.school || "",
+              values.district || "",
+              values.taluka || ""
+            );
             toast({ title: 'સફળતા', description: 'તમારું એકાઉન્ટ તૈયાર છે.' });
         } else {
             await signInWithEmail(values.email, values.password);
@@ -72,8 +103,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 py-12">
+      <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Logo className="h-8 w-8" />
@@ -87,20 +118,103 @@ export default function LoginPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {isSignUp && (
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>પૂરું નામ</FormLabel>
-                      <FormControl>
-                        <Input placeholder="તમારું નામ" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>પૂરું નામ</FormLabel>
+                        <FormControl>
+                          <Input placeholder="તમારું નામ" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>તમે કોણ છો?</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="પસંદ કરો" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="student">વિદ્યાર્થી (Student)</SelectItem>
+                            <SelectItem value="teacher">શિક્ષક (Teacher)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="standard"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ધોરણ</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="ધોરણ" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {classLevels.map(level => (
+                                <SelectItem key={level} value={level}>ધોરણ {level}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="district"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>જિલ્લો</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="જિલ્લો" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {districtsOfGujarat.map(d => (
+                                <SelectItem key={d} value={d}>{d}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="school"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>શાળાનું નામ</FormLabel>
+                        <FormControl>
+                          <Input placeholder="તમારી શાળા" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
+              
               <FormField
                 control={form.control}
                 name="email"

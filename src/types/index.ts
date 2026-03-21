@@ -1,6 +1,20 @@
 
 import type { Timestamp } from 'firebase/firestore';
 
+export type UserRole = 'teacher' | 'student';
+
+export type UserProfile = {
+  uid: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  standard: string;
+  school: string;
+  district: string;
+  taluka: string;
+  createdAt: Timestamp;
+};
+
 export type ExamPaperSettings = {
   state: string;
   district: string;

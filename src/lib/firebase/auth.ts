@@ -1,6 +1,5 @@
+
 import { 
-  GoogleAuthProvider, 
-  signInWithPopup, 
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -8,20 +7,8 @@ import {
   type AuthError
 } from 'firebase/auth';
 import { auth } from './firebase';
-
-const provider = new GoogleAuthProvider();
-
-export const signInWithGoogle = async () => {
-  if (!auth) {
-    throw new Error("Firebase is not configured.");
-  }
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    console.error('Error signing in with Google: ', error);
-    throw error;
-  }
-};
+import { createUserProfile } from './firestore';
+import type { UserRole } from '@/types';
 
 export const signInWithEmail = async (email: string, password: string): Promise<void> => {
     if (!auth) throw new Error("Firebase is not configured.");
@@ -31,29 +18,51 @@ export const signInWithEmail = async (email: string, password: string): Promise<
       console.error("Error signing in with email: ", error);
       const authError = error as AuthError;
       if (authError.code === 'auth/invalid-credential' || authError.code === 'auth/user-not-found' || authError.code === 'auth/wrong-password') {
-        throw new Error('Invalid email or password. Please try again.');
+        throw new Error('ઈમેલ અથવા પાસવર્ડ ખોટો છે. કૃપા કરીને ફરી પ્રયાસ કરો.');
       }
       throw error;
     }
 };
 
-export const signUpWithEmail = async (email: string, password: string, name?: string): Promise<void> => {
+export const signUpWithEmail = async (
+  email: string, 
+  password: string, 
+  name: string,
+  role: UserRole,
+  standard: string,
+  school: string,
+  district: string,
+  taluka: string
+): Promise<void> => {
     if (!auth) throw new Error("Firebase is not configured.");
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      if (name && userCredential.user) {
-        await updateProfile(userCredential.user, { displayName: name });
+      const user = userCredential.user;
+      
+      if (user) {
+        await updateProfile(user, { displayName: name });
+        
+        // Store profile in Firestore
+        await createUserProfile({
+          uid: user.uid,
+          name,
+          email,
+          role,
+          standard,
+          school,
+          district,
+          taluka
+        });
       }
     } catch(error) {
-      console.error("Error up with email: ", error);
+      console.error("Error signing up with email: ", error);
       const authError = error as AuthError;
       if (authError.code === 'auth/email-already-in-use') {
-        throw new Error('This email is already in use. Please sign in or use a different email.');
+        throw new Error('આ ઈમેલ પહેલેથી વપરાશમાં છે.');
       }
       throw error;
     }
 };
-
 
 export const signOut = async () => {
   if (!auth) return;

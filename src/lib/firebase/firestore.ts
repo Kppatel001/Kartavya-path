@@ -1,3 +1,4 @@
+
 import { 
   collection, 
   addDoc, 
@@ -7,13 +8,44 @@ import {
   getDocs, 
   doc,
   getDoc,
+  setDoc,
   updateDoc,
   deleteDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { ExamPaper, ExamPaperSettings, StudentMastery, FocusSession } from '@/types';
+import type { ExamPaper, ExamPaperSettings, StudentMastery, FocusSession, UserProfile } from '@/types';
 
+const usersCollection = 'users';
 const papersCollection = 'papers';
+
+export async function createUserProfile(profile: Omit<UserProfile, 'createdAt'>): Promise<void> {
+  if (!db) return;
+  const docRef = doc(db, usersCollection, profile.uid);
+  try {
+    await setDoc(docRef, {
+      ...profile,
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error creating user profile:", error);
+    throw error;
+  }
+}
+
+export async function getUserProfile(uid: string): Promise<UserProfile | null> {
+  if (!db) return null;
+  const docRef = doc(db, usersCollection, uid);
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { ...docSnap.data() } as UserProfile;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+}
 
 export async function addPaper(userId: string, title: string, settings: ExamPaperSettings, content: string): Promise<string> {
   if (!db) {
@@ -31,24 +63,21 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
   } catch (e: any) {
     console.error("Error adding document to Firestore: ", e);
     if (e.code === 'permission-denied') {
-        throw new Error("Permission denied. You do not have access to save data. Please check your Firestore security rules.");
+        throw new Error("Permission denied. You do not have access to save data.");
     }
-    throw new Error("Failed to save paper to the database. " + e.message);
+    throw new Error("Failed to save paper: " + e.message);
   }
 }
 
 export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
   if (!db) return [];
-  
   const q = query(collection(db, papersCollection), where("userId", "==", userId));
-  
   try {
     const querySnapshot = await getDocs(q);
     const papers: ExamPaper[] = [];
     querySnapshot.forEach((doc) => {
       papers.push({ id: doc.id, ...doc.data() } as ExamPaper);
     });
-    
     return papers.sort((a, b) => {
       const dateA = a.createdAt?.toMillis() || 0;
       const dateB = b.createdAt?.toMillis() || 0;
