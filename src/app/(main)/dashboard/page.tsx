@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { getPapersForUser } from '@/lib/firebase/firestore';
-import type { ExamPaper } from '@/types';
+import { getPapersForUser, getMasteryForUser, getFocusSessionsForUser } from '@/lib/firebase/firestore';
+import type { ExamPaper, StudentMastery, FocusSession } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   BookOpen, 
   Target, 
   Zap, 
   BrainCircuit, 
-  TrendingUp
+  TrendingUp,
+  Inbox
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -26,22 +27,35 @@ import {
 export default function DashboardPage() {
   const { user } = useAuth();
   const [papers, setPapers] = useState<ExamPaper[]>([]);
+  const [mastery, setMastery] = useState<StudentMastery[]>([]);
+  const [sessions, setSessions] = useState<FocusSession[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      getPapersForUser(user.uid)
-        .then(setPapers)
-        .finally(() => setLoading(false));
+      Promise.all([
+        getPapersForUser(user.uid),
+        getMasteryForUser(user.uid),
+        getFocusSessionsForUser(user.uid)
+      ]).then(([userPapers, userMastery, userSessions]) => {
+        setPapers(userPapers);
+        setMastery(userMastery);
+        setSessions(userSessions);
+        setLoading(false);
+      }).catch(() => setLoading(false));
     }
   }, [user]);
 
-  const masteryData = [
-    { subject: 'ગણિત', progress: 75, color: '#2979FF' },
-    { subject: 'વિજ્ઞાન', progress: 62, color: '#7C4DFF' },
-    { subject: 'સા. વિજ્ઞાન', progress: 88, color: '#00E676' },
-    { subject: 'ગુજરાતી', progress: 95, color: '#FFAB00' },
-  ];
+  const totalFocusMinutes = sessions.reduce((acc, curr) => acc + curr.durationMinutes, 0);
+  const averageMastery = mastery.length > 0 
+    ? Math.round(mastery.reduce((acc, curr) => acc + curr.progress, 0) / mastery.length)
+    : 0;
+
+  const chartData = mastery.map((m, i) => ({
+    subject: m.subject,
+    progress: m.progress,
+    color: ['#2979FF', '#7C4DFF', '#00E676', '#FFAB00', '#F44336'][i % 5]
+  }));
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -71,7 +85,7 @@ export default function DashboardPage() {
             <Target className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">81%</div>
+            <div className="text-2xl font-bold">{loading ? '...' : `${averageMastery}%`}</div>
             <p className="text-xs text-muted-foreground mt-1">કુલ કોન્સેપ્ટ ક્લેરિટી</p>
           </CardContent>
         </Card>
@@ -81,18 +95,18 @@ export default function DashboardPage() {
             <Zap className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">14.5h</div>
-            <p className="text-xs text-muted-foreground mt-1">આ અઠવાડિયાનું ફોકસ</p>
+            <div className="text-2xl font-bold">{loading ? '...' : `${(totalFocusMinutes / 60).toFixed(1)}h`}</div>
+            <p className="text-xs text-muted-foreground mt-1">કુલ ફોકસ સમય</p>
           </CardContent>
         </Card>
         <Card className="bg-purple-500/10 border-purple-500/20 shadow-lg group hover:scale-105 transition-transform">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">તાર્કિક સ્કોર</CardTitle>
+            <CardTitle className="text-sm font-medium">સત્રો</CardTitle>
             <BrainCircuit className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">920</div>
-            <p className="text-xs text-muted-foreground mt-1">વિશ્લેષણાત્મક શક્તિ</p>
+            <div className="text-2xl font-bold">{loading ? '...' : sessions.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">ફોકસ સત્રોની સંખ્યા</p>
           </CardContent>
         </Card>
       </div>
@@ -107,27 +121,35 @@ export default function DashboardPage() {
             <CardDescription>તમારા દ્વારા કરાયેલા રિવિઝન અને ટેસ્ટના આધારે</CardDescription>
           </CardHeader>
           <CardContent className="h-[400px] w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={masteryData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
-                <XAxis type="number" hide />
-                <YAxis 
-                  dataKey="subject" 
-                  type="category" 
-                  tick={{ fill: '#94a3b8', fontSize: 14 }} 
-                  width={100}
-                />
-                <ReTooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
-                />
-                <Bar dataKey="progress" radius={[0, 4, 4, 0]} barSize={32}>
-                  {masteryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis type="number" hide domain={[0, 100]} />
+                  <YAxis 
+                    dataKey="subject" 
+                    type="category" 
+                    tick={{ fill: '#94a3b8', fontSize: 14 }} 
+                    width={100}
+                  />
+                  <ReTooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
+                  />
+                  <Bar dataKey="progress" radius={[0, 4, 4, 0]} barSize={32}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <Inbox className="h-12 w-12 mb-4 opacity-20" />
+                <p>હજી સુધી કોઈ માસ્ટરી ડેટા ઉપલબ્ધ નથી.</p>
+                <p className="text-sm">પ્રશ્નપત્રો તૈયાર કરો અને પ્રેક્ટિસ શરૂ કરો!</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

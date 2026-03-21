@@ -11,7 +11,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { ExamPaper, ExamPaperSettings } from '@/types';
+import type { ExamPaper, ExamPaperSettings, StudentMastery, FocusSession } from '@/types';
 
 const papersCollection = 'papers';
 
@@ -49,7 +49,6 @@ export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
       papers.push({ id: doc.id, ...doc.data() } as ExamPaper);
     });
     
-    // Sort client-side to avoid requiring composite indexes immediately
     return papers.sort((a, b) => {
       const dateA = a.createdAt?.toMillis() || 0;
       const dateB = b.createdAt?.toMillis() || 0;
@@ -95,5 +94,37 @@ export async function deletePaper(paperId: string): Promise<void> {
   } catch (error) {
     console.error("Error deleting paper:", error);
     throw error;
+  }
+}
+
+export async function getMasteryForUser(userId: string): Promise<StudentMastery[]> {
+  if (!db) return [];
+  const q = query(collection(db, 'mastery'), where("userId", "==", userId));
+  try {
+    const querySnapshot = await getDocs(q);
+    const mastery: StudentMastery[] = [];
+    querySnapshot.forEach((doc) => {
+      mastery.push({ id: doc.id, ...doc.data() } as StudentMastery);
+    });
+    return mastery;
+  } catch (error) {
+    console.error("Error fetching mastery: ", error);
+    return [];
+  }
+}
+
+export async function getFocusSessionsForUser(userId: string): Promise<FocusSession[]> {
+  if (!db) return [];
+  const q = query(collection(db, 'focus_sessions'), where("userId", "==", userId));
+  try {
+    const querySnapshot = await getDocs(q);
+    const sessions: FocusSession[] = [];
+    querySnapshot.forEach((doc) => {
+      sessions.push({ id: doc.id, ...doc.data() } as FocusSession);
+    });
+    return sessions;
+  } catch (error) {
+    console.error("Error fetching sessions: ", error);
+    return [];
   }
 }
