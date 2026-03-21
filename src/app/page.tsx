@@ -37,31 +37,33 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !loading) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
         if (isSignUp) {
             await signUpWithEmail(values.email, values.password, values.name);
+            toast({ title: 'સફળતા', description: 'તમારું એકાઉન્ટ તૈયાર છે.' });
         } else {
             await signInWithEmail(values.email, values.password);
+            toast({ title: 'સ્વાગત છે', description: 'તમે સફળતાપૂર્વક લોગિન કર્યું છે.' });
         }
     } catch (error: any) {
         toast({
             variant: 'destructive',
-            title: 'Authentication Failed',
-            description: error.message || 'An unexpected error occurred.',
+            title: 'લોગિન નિષ્ફળ',
+            description: error.message || 'ઈમેલ અથવા પાસવર્ડ ખોટો છે.',
         });
     } finally {
         setIsSubmitting(false);
     }
   };
 
-  if (loading || user) {
+  if (loading || (user && !isSubmitting)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
