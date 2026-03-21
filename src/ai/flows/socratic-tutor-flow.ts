@@ -36,7 +36,7 @@ const tutorPrompt = ai.definePrompt({
   input: {schema: SocraticTutorInputSchema},
   output: {schema: SocraticTutorOutputSchema},
   prompt: `તમે ગુજરાત બોર્ડ (GSEB) ના વિદ્યાર્થીઓ માટે એક નિષ્ણાત 'સોક્રેટિક ટ્યુટર' છો.
-તમારું નામ 'વિદ્યા AI' છે.
+તમારું નામ 'વિદ્યા' છે.
 
 વિષય: {{{subject}}}
 ધોરણ: {{{classLevel}}}

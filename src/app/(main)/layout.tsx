@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import React from 'react';
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -18,7 +16,6 @@ import { cn } from '@/lib/utils';
 import { 
   FilePlus2, 
   History, 
-  Loader2, 
   LayoutDashboard, 
   ShieldCheck,
   Menu,
@@ -31,23 +28,6 @@ export default function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/');
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background text-white">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full overflow-hidden">
@@ -64,7 +44,7 @@ export default function MainLayout({
             <SidebarMenu className="px-2">
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="ડેશબોર્ડ" className="h-11">
-                  <a href="/dashboard">
+                  <a href="/">
                     <LayoutDashboard className="text-primary h-5 w-5" />
                     <span className="font-medium">ડેશબોર્ડ</span>
                   </a>

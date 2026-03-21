@@ -1,96 +1,166 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Logo } from '@/components/logo';
-import { Loader2, GraduationCap, School } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { districtsOfGujarat, classLevels } from '@/lib/data';
+import { getPapersForUser, getMasteryForUser, getFocusSessionsForUser } from '@/lib/firebase/firestore';
+import type { ExamPaper, StudentMastery, FocusSession } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { 
+  BookOpen, 
+  Target, 
+  Zap, 
+  BrainCircuit, 
+  TrendingUp,
+  Inbox,
+  Loader2
+} from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as ReTooltip, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
+import MainLayout from './(main)/layout';
 
-const formSchema = z.object({
-    name: z.string().min(2, { message: "નામ ઓછામાં ઓછું ૨ અક્ષરનું હોવું જોઈએ." }).optional(),
-    email: z.string().email({ message: "કૃપા કરીને સાચું ઈમેલ એડ્રેસ લખો." }),
-    password: z.string().min(6, { message: "પાસવર્ડ ઓછામાં ઓછો ૬ અક્ષરનો હોવો જોઈએ." }),
-    role: z.enum(['teacher', 'student']).default('student'),
-    standard: z.string().optional(),
-    school: z.string().optional(),
-    district: z.string().optional(),
-    taluka: z.string().optional(),
-});
-
-export default function LoginPage() {
-  const { user, loading, signInWithEmail, signUpWithEmail } = useAuth();
-  const router = useRouter();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      role: "student",
-      standard: "",
-      school: "",
-      district: "",
-      taluka: "",
-    },
-  });
+export default function RootPage() {
+  const { user, loading: authLoading } = useAuth();
+  const [papers, setPapers] = useState<ExamPaper[]>([]);
+  const [mastery, setMastery] = useState<StudentMastery[]>([]);
+  const [sessions, setSessions] = useState<FocusSession[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && !loading) {
-      router.push('/dashboard');
+    if (user) {
+      Promise.all([
+        getPapersForUser(user.uid),
+        getMasteryForUser(user.uid),
+        getFocusSessionsForUser(user.uid)
+      ]).then(([userPapers, userMastery, userSessions]) => {
+        setPapers(userPapers);
+        setMastery(userMastery);
+        setSessions(userSessions);
+        setLoading(false);
+      }).catch(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user, loading, router]);
+  }, [user, authLoading]);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    try {
-        if (isSignUp) {
-            await signUpWithEmail(
-              values.email, 
-              values.password, 
-              values.name || "",
-              values.role,
-              values.standard || "",
-              values.school || "",
-              values.district || "",
-              values.taluka || ""
-            );
-            toast({ title: 'સફળતા', description: 'તમારું એકાઉન્ટ તૈયાર છે.' });
-        } else {
-            await signInWithEmail(values.email, values.password);
-            toast({ title: 'સ્વાગત છે', description: 'તમે સફળતાપૂર્વક લોગિન કર્યું છે.' });
-        }
-    } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: isSignUp ? 'સાઇન-અપ નિષ્ફળ' : 'લોગિન નિષ્ફળ',
-            description: error.message || 'ઈમેલ અથવા પાસવર્ડ ખોટો છે.',
-        });
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
+  const totalFocusMinutes = sessions.reduce((acc, curr) => acc + curr.durationMinutes, 0);
+  const averageMastery = mastery.length > 0 
+    ? Math.round(mastery.reduce((acc, curr) => acc + curr.progress, 0) / mastery.length)
+    : 0;
 
-  if (loading || (user && !isSubmitting)) {
+  const chartData = mastery.map((m, i) => ({
+    subject: m.subject,
+    progress: m.progress,
+    color: ['#2979FF', '#7C4DFF', '#00E676', '#FFAB00', '#F44336'][ i % 5]
+  }));
+
+  const content = (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold tracking-tight font-headline text-white">
+          નમસ્તે, {user?.displayName || 'વિદ્યાર્થી'} 👋
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          તમારી પ્રગતિની વિગતો અહીં જોઈ શકાશે.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-primary/10 border-primary/20 shadow-lg group hover:scale-105 transition-transform">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">તૈયાર પેપર્સ</CardTitle>
+            <BookOpen className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '...' : papers.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">તમારા દ્વારા તૈયાર કરાયેલા પેપર્સ</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-accent/10 border-accent/20 shadow-lg group hover:scale-105 transition-transform">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">નિપુણતા (Mastery)</CardTitle>
+            <Target className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '...' : `${averageMastery}%`}</div>
+            <p className="text-xs text-muted-foreground mt-1">કુલ કોન્સેપ્ટ ક્લેરિટી</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-500/10 border-green-500/20 shadow-lg group hover:scale-105 transition-transform">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">સ્ટડી કલાકો</CardTitle>
+            <Zap className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '...' : `${(totalFocusMinutes / 60).toFixed(1)}h`}</div>
+            <p className="text-xs text-muted-foreground mt-1">કુલ ફોકસ સમય</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-purple-500/10 border-purple-500/20 shadow-lg group hover:scale-105 transition-transform">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">સત્રો</CardTitle>
+            <BrainCircuit className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? '...' : sessions.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">ફોકસ સત્રોની સંખ્યા</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6">
+        <Card className="bg-card/40 backdrop-blur-sm border-border/50 shadow-xl overflow-hidden">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              વિષયવાર માસ્ટરી લેવલ
+            </CardTitle>
+            <CardDescription>તમારી પોતાની પ્રગતિનું વિશ્લેષણ</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[400px] w-full pt-4">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis type="number" hide domain={[0, 100]} />
+                  <YAxis 
+                    dataKey="subject" 
+                    type="category" 
+                    tick={{ fill: '#94a3b8', fontSize: 14 }} 
+                    width={100}
+                  />
+                  <ReTooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
+                  />
+                  <Bar dataKey="progress" radius={[0, 4, 4, 0]} barSize={32}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <Inbox className="h-12 w-12 mb-4 opacity-20" />
+                <p>હજી સુધી કોઈ ડેટા ઉપલબ્ધ નથી.</p>
+                <p className="text-sm">પ્રશ્નપત્રો તૈયાર કરો અને પ્રેક્ટિસ શરૂ કરો!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -99,172 +169,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 py-12">
-      <Card className="w-full max-w-md shadow-2xl bg-card border-border">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <GraduationCap className="h-8 w-8" />
-          </div>
-          <CardTitle className="font-headline text-3xl text-white">કર્તવ્ય પથ</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            {isSignUp ? 'નવું એકાઉન્ટ બનાવો' : 'તમારા એકાઉન્ટમાં લોગિન કરો'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {isSignUp && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>પૂરું નામ</FormLabel>
-                        <FormControl>
-                          <Input placeholder="તમારું નામ" {...field} className="bg-background" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>તમે કોણ છો?</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-background">
-                              <SelectValue placeholder="પસંદ કરો" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="student">વિદ્યાર્થી (Student)</SelectItem>
-                            <SelectItem value="teacher">શિક્ષક (Teacher)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="standard"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ધોરણ</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-background">
-                                <SelectValue placeholder="ધોરણ" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {classLevels.map(level => (
-                                <SelectItem key={level} value={level}>ધોરણ {level}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="district"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>જિલ્લો</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-background">
-                                <SelectValue placeholder="જિલ્લો" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {districtsOfGujarat.map(d => (
-                                <SelectItem key={d} value={d}>{d}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="school"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>શાળાનું નામ</FormLabel>
-                        <FormControl>
-                          <Input placeholder="તમારી શાળા" {...field} className="bg-background" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-              
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                     <FormLabel>ઈમેલ</FormLabel>
-                    <FormControl>
-                      <Input autoComplete="email" placeholder="name@example.com" {...field} className="bg-background" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                     <FormLabel>પાસવર્ડ</FormLabel>
-                    <FormControl>
-                      <Input autoComplete={isSignUp ? 'new-password' : 'current-password'} type="password" placeholder="••••••••" {...field} className="bg-background" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex flex-col space-y-2 pt-2">
-                 <Button
-                    type="submit"
-                    className="w-full bg-primary hover:bg-primary/90"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {isSignUp ? 'એકાઉન્ટ બનાવો' : 'સાઇન ઇન'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-
-          <div className="text-center text-sm text-muted-foreground mt-6">
-            {isSignUp ? (
-                <>
-                    પહેલેથી એકાઉન્ટ છે?{' '}
-                    <button type="button" className="text-primary hover:underline font-bold" onClick={() => setIsSignUp(false)}>લોગિન કરો</button>
-                </>
-            ) : (
-                <>
-                    એકાઉન્ટ નથી?{' '}
-                    <button type="button" className="text-primary hover:underline font-bold" onClick={() => setIsSignUp(true)}>સાઇન અપ કરો</button>
-                </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <MainLayout>
+      {content}
+    </MainLayout>
   );
 }
