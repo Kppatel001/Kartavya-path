@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AdBanner } from '@/components/ad-banner';
+import { NativeAd } from '@/components/native-ad';
 
 const SECOND_AD_UNIT_ID = "ca-app-pub-1866650216428197/5377544903";
 
@@ -109,6 +110,8 @@ export default function HistoryPage() {
         </p>
       </div>
 
+      {!loading && papers.length > 0 && <NativeAd className="mb-6" />}
+
       {loading ? (
         <PaperHistorySkeleton />
       ) : papers.length > 0 ? (
@@ -179,7 +182,7 @@ export default function HistoryPage() {
           </Button>
         </div>
       )}
-      <AdBanner />
+      <AdBanner position="bottom" />
     </div>
   );
 }

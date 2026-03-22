@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import MainLayout from './(main)/layout';
 import { AdBanner } from '@/components/ad-banner';
+import { NativeAd } from '@/components/native-ad';
 
 const SECOND_AD_UNIT_ID = "ca-app-pub-1866650216428197/5377544903";
 
@@ -135,10 +136,12 @@ export default function RootPage() {
           </Card>
         </div>
 
+        <NativeAd className="my-8" />
+
         <div className="grid gap-6">
           <Card className="bg-card/40 backdrop-blur-sm border-border/50 shadow-xl overflow-hidden">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
+              <CardTitle className="flex items-center gap-2 text-xl font-headline">
                 <TrendingUp className="h-5 w-5 text-primary" />
                 વિષયવાર માસ્ટરી લેવલ
               </CardTitle>
@@ -178,7 +181,7 @@ export default function RootPage() {
           </Card>
         </div>
       </div>
-      <AdBanner />
+      <AdBanner position="bottom" />
     </MainLayout>
   );
 }
