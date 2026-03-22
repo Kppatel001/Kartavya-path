@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
+// AdMob Configuration from user
+const ADMOB_APP_ID = "ca-app-pub-1866650216428197~1065930653";
+const ADMOB_UNIT_ID = "ca-app-pub-1866650216428197/6592355970";
+
 interface AdBannerProps {
   className?: string;
 }
@@ -13,14 +17,16 @@ export function AdBanner({ className }: AdBannerProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate AdMob ad loading lifecycle
+    // Simulate AdMob ad loading lifecycle using the provided IDs
+    console.log(`Initializing AdMob with App ID: ${ADMOB_APP_ID}`);
+    console.log(`Loading Banner Ad Unit: ${ADMOB_UNIT_ID}`);
+    
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 1500);
 
     return () => {
       clearTimeout(timer);
-      // Logic for disposing ad to avoid memory leaks would go here in a native environment
     };
   }, []);
 
@@ -33,6 +39,7 @@ export function AdBanner({ className }: AdBannerProps) {
         isLoaded ? "translate-y-0" : "translate-y-full",
         className
       )}
+      data-ad-unit={ADMOB_UNIT_ID}
     >
       <div className="relative w-full max-w-4xl bg-card border-t border-primary/20 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] backdrop-blur-md px-4 py-2 flex items-center justify-between">
         <button 
