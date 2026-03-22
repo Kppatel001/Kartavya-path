@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,7 +40,7 @@ import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned
 import { extractBlueprint } from '@/ai/flows/extract-blueprint';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Upload, FileText, X, Image as ImageIcon, GraduationCap, MapPin, Plus, Clock } from 'lucide-react';
+import { Loader2, Sparkles, Upload, FileText, X, GraduationCap, MapPin, Plus } from 'lucide-react';
 import type { ExamPaperSettings } from '@/types';
 
 const formSchema = z.object({
@@ -69,7 +69,6 @@ export function GenerateForm() {
   const [isCustomSchoolMode, setIsCustomSchoolMode] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -125,18 +124,6 @@ export function GenerateForm() {
     } catch (error) {
       setIsExtracting(false);
     }
-  };
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        setSchoolLogoDataUri(event.target?.result as string);
-        toast({ title: 'લોગો અપલોડ થયો', description: 'શાળાનો લોગો ઉમેરવામાં આવ્યો છે.' });
-    };
-    reader.readAsDataURL(file);
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -530,4 +517,3 @@ export function GenerateForm() {
     </Card>
   );
 }
-

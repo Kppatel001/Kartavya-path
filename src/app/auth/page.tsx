@@ -137,7 +137,6 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background relative overflow-hidden">
-      {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent rounded-full blur-[120px]" />
@@ -221,7 +220,7 @@ export default function AuthPage() {
 
           <TabsContent value="signup" className="animate-in fade-in zoom-in-95 duration-300">
             <Card className="border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl rounded-3xl overflow-hidden">
-              <ScrollArea className="h-[65vh] w-full">
+              <ScrollArea className="h-[60vh] w-full">
                 <CardHeader className="text-center pb-2">
                   <CardTitle className="text-3xl font-bold">નવું એકાઉન્ટ બનાવો</CardTitle>
                   <CardDescription className="text-base">GSEB શિક્ષકો અને વિદ્યાર્થીઓ માટે</CardDescription>

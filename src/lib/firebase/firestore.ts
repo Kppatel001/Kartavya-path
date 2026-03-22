@@ -1,4 +1,3 @@
-
 import { 
   collection, 
   addDoc, 
@@ -17,6 +16,8 @@ import type { ExamPaper, ExamPaperSettings, StudentMastery, FocusSession, UserPr
 
 const usersCollection = 'users';
 const papersCollection = 'papers';
+const focusSessionsCollection = 'focus_sessions';
+const masteryCollection = 'mastery';
 
 export async function createUserProfile(profile: Omit<UserProfile, 'createdAt'>): Promise<void> {
   if (!db) return;
@@ -62,9 +63,6 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
     return docRef.id;
   } catch (e: any) {
     console.error("Error adding document to Firestore: ", e);
-    if (e.code === 'permission-denied') {
-        throw new Error("Permission denied. You do not have access to save data.");
-    }
     throw new Error("Failed to save paper: " + e.message);
   }
 }
@@ -126,9 +124,23 @@ export async function deletePaper(paperId: string): Promise<void> {
   }
 }
 
+export async function addFocusSession(userId: string, durationMinutes: number): Promise<void> {
+  if (!db) return;
+  try {
+    await addDoc(collection(db, focusSessionsCollection), {
+      userId,
+      durationMinutes,
+      completedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error adding focus session:", error);
+    throw error;
+  }
+}
+
 export async function getMasteryForUser(userId: string): Promise<StudentMastery[]> {
   if (!db) return [];
-  const q = query(collection(db, 'mastery'), where("userId", "==", userId));
+  const q = query(collection(db, masteryCollection), where("userId", "==", userId));
   try {
     const querySnapshot = await getDocs(q);
     const mastery: StudentMastery[] = [];
@@ -144,7 +156,7 @@ export async function getMasteryForUser(userId: string): Promise<StudentMastery[
 
 export async function getFocusSessionsForUser(userId: string): Promise<FocusSession[]> {
   if (!db) return [];
-  const q = query(collection(db, 'focus_sessions'), where("userId", "==", userId));
+  const q = query(collection(db, focusSessionsCollection), where("userId", "==", userId));
   try {
     const querySnapshot = await getDocs(q);
     const sessions: FocusSession[] = [];
