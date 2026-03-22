@@ -98,8 +98,8 @@ export default function MainLayout({
               <UserNav />
             </div>
           </header>
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto w-full">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 relative">
+            <div className="max-w-7xl mx-auto w-full mb-16">
               {children}
             </div>
           </div>

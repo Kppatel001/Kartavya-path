@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
@@ -24,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { AdBanner } from '@/components/ad-banner';
 
 function PaperHistorySkeleton() {
   return (
@@ -95,7 +95,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight font-headline text-white">
           પ્રશ્નપત્ર ઇતિહાસ
@@ -175,6 +175,7 @@ export default function HistoryPage() {
           </Button>
         </div>
       )}
+      <AdBanner />
     </div>
   );
 }

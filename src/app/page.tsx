@@ -26,6 +26,7 @@ import {
   Cell
 } from 'recharts';
 import MainLayout from './(main)/layout';
+import { AdBanner } from '@/components/ad-banner';
 
 export default function RootPage() {
   const { user, loading: authLoading } = useAuth();
@@ -77,7 +78,7 @@ export default function RootPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="space-y-8 animate-in fade-in duration-500 pb-20">
         <div className="flex flex-col gap-2">
           <h1 className="text-4xl font-bold tracking-tight font-headline text-white">
             નમસ્તે, {user?.displayName || 'વિદ્યાર્થી'} 👋
@@ -173,6 +174,7 @@ export default function RootPage() {
           </Card>
         </div>
       </div>
+      <AdBanner />
     </MainLayout>
   );
 }
