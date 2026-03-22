@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AdBanner } from '@/components/ad-banner';
 
+const SECOND_AD_UNIT_ID = "ca-app-pub-1866650216428197/5377544903";
+
 function PaperHistorySkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -96,6 +98,8 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6 pb-20">
+      <AdBanner unitId={SECOND_AD_UNIT_ID} position="top" />
+
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight font-headline text-white">
           પ્રશ્નપત્ર ઇતિહાસ

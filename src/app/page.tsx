@@ -28,6 +28,8 @@ import {
 import MainLayout from './(main)/layout';
 import { AdBanner } from '@/components/ad-banner';
 
+const SECOND_AD_UNIT_ID = "ca-app-pub-1866650216428197/5377544903";
+
 export default function RootPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -79,6 +81,8 @@ export default function RootPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+        <AdBanner unitId={SECOND_AD_UNIT_ID} position="top" />
+        
         <div className="flex flex-col gap-2">
           <h1 className="text-4xl font-bold tracking-tight font-headline text-white">
             નમસ્તે, {user?.displayName || 'વિદ્યાર્થી'} 👋
