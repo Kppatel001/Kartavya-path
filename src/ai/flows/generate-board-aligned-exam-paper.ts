@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow to generate board-aligned exam papers for Gujarat Schools (GSEB focus).
@@ -27,7 +26,10 @@ const GenerateBoardAlignedExamPaperOutputSchema = z.object({
 
 export type GenerateBoardAlignedExamPaperOutput = z.infer<typeof GenerateBoardAlignedExamPaperOutputSchema>;
 
-// Server Action Wrapper with robust error handling
+/**
+ * Server Action to generate exam paper.
+ * Ensures the heavy AI processing stays on the server.
+ */
 export async function generateBoardAlignedExamPaper(input: GenerateBoardAlignedExamPaperInput) {
   try {
     const result = await generateBoardAlignedExamPaperFlow(input);
@@ -39,7 +41,7 @@ export async function generateBoardAlignedExamPaper(input: GenerateBoardAlignedE
     console.error("Genkit Flow Critical Error:", error);
     return { 
       success: false, 
-      error: error.message || "સર્વર કનેક્શનમાં સમસ્યા છે. કૃપા કરીને ઇન્ટરનેટ ચેક કરો." 
+      error: error.message || "સર્વર કનેક્શનમાં સમસ્યા છે. કૃપા કરીને ઇન્ટરનેટ ચેક કરો અથવા API Key તપાસો." 
     };
   }
 }
@@ -60,7 +62,7 @@ Total Marks: {{{totalMarks}}}
 Language: {{{language}}}
 Exam Type: {{{examType}}}
 
-DIRECTIONS FOR GSEB STANDARDS (BACKEND BLUEPRINTS):
+DIRECTIONS FOR GSEB STANDARDS:
 If the user has not provided a manual blueprint, apply these official GSEB/GCERT marking schemes:
 
 1. PRIMARY (Std 1 to 5):
@@ -73,40 +75,36 @@ If the user has not provided a manual blueprint, apply these official GSEB/GCERT
 2. UPPER PRIMARY (Std 6 to 8):
    - Focus: Conceptual clarity.
    - Layout:
-     વિભાગ A: 1-mark Objective (MCQ, VSA) - 20% weight.
+     વિભાગ A: 1-mark Objective (MCQs, VSA) - 20% weight.
      વિભાગ B: 2-marks Short Answer - 40% weight.
      વિભાગ C: 3-marks Long Answer - 40% weight.
 
 3. SECONDARY (Std 9 & 10):
    - STRICTLY use the 80-mark Board Pattern scaled to {{{totalMarks}}}:
-     વિભાગ A (Section A): હેતુલક્ષી પ્રશ્નો (MCQs, VSA, Fill in blanks, True/False, Match) - 1 mark each (20% weight).
+     વિભાગ A (Section A): હેતુલક્ષી પ્રશ્નો (MCQs, VSA, Fill in blanks, True/False) - 1 mark each (20% weight).
      વિભાગ B (Section B): ટૂંક જવાબી પ્રશ્નો (Answer in 2-3 sentences) - 2 marks each (25% weight).
      વિભાગ C (Section C): મુદ્દાસર ઉત્તર આપો (Answer in 5-6 sentences) - 3 marks each (30% weight).
      વિભાગ D (Section D): સવિસ્તાર ઉત્તર આપો (Detailed Answer/Problem Solving) - 4/5 marks each (25% weight).
 
 4. HIGHER SECONDARY (Std 11 & 12):
-   - Science Stream: Part A (50 MCQs for OMR) and Part B (Descriptive A, B, C, D). Scale to {{{totalMarks}}}.
-   - Commerce/Arts: Sections A through F. Section E and F must contain long answers/essays/accounts/sums.
+   - Science Stream: Part A (MCQs) and Part B (Descriptive A, B, C, D). Scale to {{{totalMarks}}}.
+   - Commerce/Arts: Standard board sections A through F.
 
 {{#if blueprintText}}
 USER PROVIDED CUSTOM BLUEPRINT / STRUCTURE:
 {{{blueprintText}}}
 Apply this structure strictly.
 {{else}}
-NO BLUEPRINT PROVIDED. Apply the standard GSEB/GCERT "Backend Blueprint" defined above for Std {{{classLevel}}} and Subject {{{subject}}}.
+NO BLUEPRINT PROVIDED. Apply the standard GSEB/GCERT marking scheme for Std {{{classLevel}}} and Subject {{{subject}}}.
 {{/if}}
 
 FORMATTING RULES:
 - Use standard Gujarati terminology: "પ્રશ્નપત્ર", "વિષય", "ધોરણ", "કુલ ગુણ", "સમય".
-- Section headers must be bold: "--- વિભાગ A (હેતુલક્ષી પ્રશ્નો) ---".
-- Number questions clearly (1, 2, 3...).
+- Section headers must be bold: "--- વિભાગ A ---".
 - Total marks must sum exactly to {{{totalMarks}}}.
-- Include internal choices (અથવા) where appropriate for higher standards (Std 9-12).
+- Include answer key at the end with "--- જવાબવહી (Answer Key) ---".
 
-ANSWER KEY REQUIREMENT:
-At the very end, include: "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---" with correct options and brief hints.
-
-Output the content in clean, professional Gujarati.`,
+Output the content in professional Gujarati.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(

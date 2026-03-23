@@ -3,9 +3,13 @@ import {googleAI} from '@genkit-ai/google-genai';
 
 /**
  * Genkit initialization for Google AI (Gemini).
- * Ensures the API key is explicitly loaded from environment variables.
+ * API key is loaded strictly from environment variables on the server.
  */
-const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || 'AIzaSyDHJ8Q7qgbuudy-zBVBvNtCDKW-Yhq6Hmk';
+const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+if (!apiKey) {
+  console.error("Critical Error: GEMINI_API_KEY is not defined in environment variables.");
+}
 
 export const ai = genkit({
   plugins: [
