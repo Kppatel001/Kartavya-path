@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -93,7 +92,7 @@ export function GenerateForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      state: '',
+      state: 'Gujarat',
       district: '',
       taluka: '',
       board: '',
@@ -122,7 +121,6 @@ export function GenerateForm() {
   const watchSections = form.watch('structuredSections') || [];
   const watchTotalMarks = form.watch('totalMarks');
 
-  // Safely calculate total to avoid NaN errors in children attributes
   const calculatedTotal = watchSections.reduce((acc, section) => {
     const q = Number(section.numQuestions);
     const m = Number(section.marksPerQuestion);
@@ -172,21 +170,10 @@ export function GenerateForm() {
       return;
     }
 
-    if (useStructuredBlueprint && (fields.length === 0 || !isMarksMatching)) {
-      toast({ 
-        variant: 'destructive', 
-        title: 'ગુણભારની ભૂલ', 
-        description: fields.length === 0 
-          ? 'કૃપા કરીને ઓછામાં ઓછો એક વિભાગ ઉમેરો.' 
-          : `વિભાગોના કુલ ગુણ (${calculatedTotal}) અને કુલ ગુણ (${values.totalMarks}) સમાન હોવા જોઈએ.` 
-      });
-      return;
-    }
-
     setIsGenerating(true);
     try {
       const blueprintToUse = useStructuredBlueprint 
-        ? `Structure: ${JSON.stringify(values.structuredSections)} Exam Type: ${values.examType}`
+        ? (values.structuredSections.length > 0 ? `Structure: ${JSON.stringify(values.structuredSections)} Exam Type: ${values.examType}` : "")
         : values.blueprintText;
 
       const response = await generateBoardAlignedExamPaper({
@@ -213,7 +200,7 @@ export function GenerateForm() {
         timeAllowed: values.timeAllowed,
         examType: values.examType,
         blueprintText: blueprintToUse || "",
-        structuredBlueprint: useStructuredBlueprint ? values.structuredSections : undefined,
+        structuredBlueprint: useStructuredBlueprint && values.structuredSections.length > 0 ? values.structuredSections : undefined,
         schoolLogo: ""
       };
 
@@ -327,7 +314,7 @@ export function GenerateForm() {
                       {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
-                            <Input placeholder="શાળાનું નામ લખો (દા.ત. સરસ્વતી વિદ્યાલય)" {...field} autoFocus />
+                            <Input placeholder="શાળાનું નામ લખો" {...field} autoFocus />
                           </FormControl>
                           <Button type="button" variant="outline" size="icon" onClick={() => setIsCustomSchoolMode(false)}><X className="h-4 w-4" /></Button>
                         </div>
@@ -339,7 +326,7 @@ export function GenerateForm() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="શાળા પસંદ કરો અથવા નવી ઉમેરો" />
+                              <SelectValue placeholder="શાળા પસંદ કરો" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -570,7 +557,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્નો</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="સંખ્યા લખો" /></FormControl>
+                                <FormControl><Input type="number" {...field} placeholder="સંખ્યા" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -580,7 +567,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">ગુણ (દરેક)</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="ગુણ લખો" /></FormControl>
+                                <FormControl><Input type="number" {...field} placeholder="ગુણ" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -593,7 +580,7 @@ export function GenerateForm() {
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="કક્ષા પસંદ કરો" />
+                                      <SelectValue placeholder="કક્ષા" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -611,30 +598,33 @@ export function GenerateForm() {
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-muted/30 p-4 rounded-xl border border-dashed">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => append({ 
-                        id: Math.random().toString(), 
-                        name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
-                        questionType: 'SA', 
-                        numQuestions: undefined as any, 
-                        marksPerQuestion: undefined as any, 
-                        difficulty: 'સામાન્ય' 
-                      })}
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> નવો વિભાગ ઉમેરો
-                    </Button>
+                    <div className="space-y-1">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => append({ 
+                          id: Math.random().toString(), 
+                          name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
+                          questionType: 'SA', 
+                          numQuestions: undefined as any, 
+                          marksPerQuestion: undefined as any, 
+                          difficulty: 'સામાન્ય' 
+                        })}
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> નવો વિભાગ ઉમેરો
+                      </Button>
+                      <p className="text-[10px] text-muted-foreground italic">(વૈકલ્પિક: તમે તેને ખાલી પણ છોડી શકો છો)</p>
+                    </div>
 
                     <div className="flex items-center gap-4">
                        <div className="text-right">
                           <p className="text-sm text-muted-foreground">ગણતરી મુજબ કુલ ગુણ:</p>
                           <div className="flex items-center gap-2 justify-end">
-                             <span className={`text-2xl font-black ${isMarksMatching ? 'text-green-500' : 'text-destructive'}`}>
-                                {String(calculatedTotal)}
+                             <span className={`text-2xl font-black ${isMarksMatching || fields.length === 0 ? 'text-green-500' : 'text-destructive'}`}>
+                                {String(calculatedTotal || 0)}
                              </span>
                              <span className="text-muted-foreground">/ {watchTotalMarks || 0}</span>
-                             {isMarksMatching ? (
+                             {(isMarksMatching || fields.length === 0) ? (
                                <CheckCircle2 className="h-5 w-5 text-green-500" />
                              ) : (
                                <AlertCircle className="h-5 w-5 text-destructive" />
@@ -689,7 +679,7 @@ export function GenerateForm() {
                         <FormLabel>માળખું / સૂચનાઓ (વૈકલ્પિક)</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="અહીં તમારા પેપરનું માળખું લખો (દા.ત., વિભાગ A માં ૧૦ MCQs, વિભાગ B માં ટૂંક જવાબી પ્રશ્નો...)" 
+                            placeholder="અહીં તમારા પેપરનું માળખું લખો (દા.ત., વિભાગ A માં ૧૦ MCQs...)" 
                             className="min-h-[120px]"
                             {...field} 
                           />
@@ -705,13 +695,13 @@ export function GenerateForm() {
           <CardFooter className="bg-muted/30 border-t p-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Info className="h-4 w-4" />
-              <span>જનરેશનમાં ૧૦-૧૫ સેકન્ડ લાગી શકે છે.</span>
+              <span>બધી વિગતો ફરજિયાત નથી. તમે સીધું પેપર બનાવી શકો છો.</span>
             </div>
             <Button 
               type="submit" 
               size="lg" 
               className="w-full sm:w-auto min-w-[200px] h-14 text-xl font-bold shadow-xl shadow-primary/20" 
-              disabled={isGenerating || isExtracting || (useStructuredBlueprint && (fields.length > 0 && !isMarksMatching))}
+              disabled={isGenerating || isExtracting}
             >
               {isGenerating ? (
                 <Loader2 className="mr-3 h-6 w-6 animate-spin" />
