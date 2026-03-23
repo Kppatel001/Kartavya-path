@@ -1,6 +1,10 @@
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 
+/**
+ * Genkit initialization for Google AI (Gemini).
+ * It will prioritize GOOGLE_GENAI_API_KEY, then GEMINI_API_KEY, then GOOGLE_API_KEY from environment variables.
+ */
 export const ai = genkit({
   plugins: [
     googleAI({
