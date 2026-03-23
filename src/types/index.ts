@@ -15,6 +15,15 @@ export type UserProfile = {
   createdAt: Timestamp;
 };
 
+export type BlueprintSection = {
+  id: string;
+  name: string;
+  questionType: 'MCQ' | 'VSA' | 'SA' | 'LA';
+  numQuestions: number;
+  marksPerQuestion: number;
+  difficulty: 'સામાન્ય' | 'મધ્યમ' | 'અઘરું';
+};
+
 export type ExamPaperSettings = {
   state: string;
   district: string;
@@ -29,6 +38,8 @@ export type ExamPaperSettings = {
   timeAllowed?: string;
   schoolLogo?: string;
   blueprintText?: string;
+  examType?: string;
+  structuredBlueprint?: BlueprintSection[];
 };
 
 export type ExamPaper = {
