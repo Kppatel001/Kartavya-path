@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to generate board-aligned exam papers for Gujarat Schools (GSEB focus).
@@ -15,6 +16,7 @@ const GenerateBoardAlignedExamPaperInputSchema = z.object({
   totalMarks: z.number().describe('The total marks for the exam paper.'),
   language: z.string().optional().describe('The language for the exam paper. Defaults to Gujarati.'),
   blueprintText: z.string().optional().describe('Extracted blueprint text or manual blueprint description.'),
+  examType: z.string().optional().describe('Type of exam like Unit Test, Final Exam, etc.'),
 });
 
 export type GenerateBoardAlignedExamPaperInput = z.infer<typeof GenerateBoardAlignedExamPaperInputSchema>;
@@ -25,7 +27,7 @@ const GenerateBoardAlignedExamPaperOutputSchema = z.object({
 
 export type GenerateBoardAlignedExamPaperOutput = z.infer<typeof GenerateBoardAlignedExamPaperOutputSchema>;
 
-// Server Action Wrapper with robust error handling to prevent "Server Components render" crash
+// Server Action Wrapper with robust error handling
 export async function generateBoardAlignedExamPaper(input: GenerateBoardAlignedExamPaperInput) {
   try {
     const result = await generateBoardAlignedExamPaperFlow(input);
@@ -35,7 +37,6 @@ export async function generateBoardAlignedExamPaper(input: GenerateBoardAlignedE
     return { success: true, examPaper: result.examPaper };
   } catch (error: any) {
     console.error("Genkit Flow Critical Error:", error);
-    // Return a plain object instead of throwing to prevent Next.js production error omission
     return { 
       success: false, 
       error: error.message || "સર્વર કનેક્શનમાં સમસ્યા છે. કૃપા કરીને ઇન્ટરનેટ ચેક કરો." 
@@ -57,10 +58,21 @@ Subject: {{{subject}}}
 Chapters: {{{chapters}}}
 Total Marks: {{{totalMarks}}}
 Language: {{{language}}}
+Exam Type: {{{examType}}}
+
+DIRECTIONS FOR GSEB STANDARDS:
+- For Primary (Standard 1 to 5): Focus on simple, activity-based questions. Use 'વિભાગ A' for basic knowledge and 'વિભાગ B' for drawing/matching/short answers.
+- For Upper Primary (Standard 6 to 8): Use Sections A, B, C. Section A should be 1-mark objective questions.
+- For Secondary (Standard 9 & 10): STRICTLY follow the A, B, C, D pattern.
+- For Higher Secondary (Standard 11 & 12):
+  - Science: Physics/Chemistry/Biology should have Part A (MCQs) and Part B (Descriptive).
+  - Commerce/Arts: Follow the A, B, C, D, E, F section pattern where Section E and F are for 4-5 marks questions.
 
 {{#if blueprintText}}
-Syllabus / Blueprint Details:
+STRUCTURE / BLUEPRINT DETAILS PROVIDED BY USER:
 {{{blueprintText}}}
+{{else}}
+If no blueprint is provided, apply the standard GSEB/GCERT marking scheme for the specified subject and marks.
 {{/if}}
 
 The exam paper must follow a clean, structured format:
@@ -74,8 +86,8 @@ The exam paper must follow a clean, structured format:
 2. FORMATTING RULES:
    - Use clear headers for each section, e.g., "--- વિભાગ A ---".
    - Number each question clearly (1, 2, 3...).
-   - Ensure the marks distribution matches the totalMarks provided.
-   - Use standard GCERT/GSEB terminology.
+   - Ensure the marks distribution matches exactly {{{totalMarks}}}.
+   - Use standard GCERT/GSEB terminology in Gujarati.
 
 3. ANSWER KEY REQUIREMENT:
    At the very end of the paper, add "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---".

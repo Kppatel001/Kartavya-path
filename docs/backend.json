@@ -18,14 +18,28 @@
       },
       "required": ["uid", "name", "email", "role", "standard", "district"]
     },
+    "BlueprintSection": {
+      "title": "Blueprint Section",
+      "description": "Definition of an individual section within an exam paper.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "questionType": { "type": "string", "enum": ["MCQ", "VSA", "SA", "LA"] },
+        "numQuestions": { "type": "number" },
+        "marksPerQuestion": { "type": "number" },
+        "difficulty": { "type": "string", "enum": ["સામાન્ય", "મધ્યમ", "અઘરું"] }
+      },
+      "required": ["name", "questionType", "numQuestions", "marksPerQuestion"]
+    },
     "ExamPaperSettings": {
       "title": "Exam Paper Settings",
       "description": "Configuration settings for a generated exam paper including school and location details.",
       "type": "object",
       "properties": {
         "state": { "type": "string" },
-        "district": { "type": "string", "description": "The district in Gujarat." },
-        "taluka": { "type": "string", "description": "The taluka or city in the district." },
+        "district": { "type": "string" },
+        "taluka": { "type": "string" },
         "board": { "type": "string" },
         "classLevel": { "type": "string" },
         "subject": { "type": "string" },
@@ -34,8 +48,13 @@
         "language": { "type": "string" },
         "schoolName": { "type": "string" },
         "timeAllowed": { "type": "string" },
+        "examType": { "type": "string" },
         "schoolLogo": { "type": "string", "format": "uri" },
-        "blueprintText": { "type": "string" }
+        "blueprintText": { "type": "string" },
+        "structuredBlueprint": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/BlueprintSection" }
+        }
       },
       "required": ["state", "district", "board", "classLevel", "subject", "chapters", "totalMarks", "language", "schoolName"]
     },

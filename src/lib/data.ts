@@ -1,3 +1,4 @@
+
 export const districtsOfGujarat = [
   "Ahmedabad (અમદાવાદ)",
   "Amreli (અમરેલી)",
@@ -161,14 +162,21 @@ export const subjects = [
   "ગુજરાતી (Gujarati)", 
   "અંગ્રેજી (English)", 
   "હિન્દી (Hindi)", 
+  "સંસ્કૃત (Sanskrit)",
+  "પર્યાવરણ (Environment/EVS)",
   "ભૌતિક વિજ્ઞાન (Physics)", 
   "રસાયણ વિજ્ઞાન (Chemistry)", 
   "જીવ વિજ્ઞાન (Biology)", 
-  "ઇતિહાસ (History)", 
-  "ભૂગોળ (Geography)", 
-  "કમ્પ્યુટર વિજ્ઞાન (Computer Science)",
-  "સામાન્ય જ્ઞાન (General Knowledge)",
-  "કોમ્યુટર (Computer)"
+  "અર્થશાસ્ત્ર (Economics)",
+  "વાણિજ્ય વ્યવસ્થા (B.A.)",
+  "આંકડાશાસ્ત્ર (Statistics)",
+  "નામાના મૂળતત્વો (Accountancy)",
+  "મનોવિજ્ઞાન (Psychology)",
+  "તત્વજ્ઞાન (Philosophy)",
+  "સમાજશાસ્ત્ર (Sociology)",
+  "કમ્પ્યુટર (Computer)",
+  "ચિત્રકામ (Art)",
+  "સામાન્ય જ્ઞાન (G.K.)"
 ];
 
 export const languages = [
