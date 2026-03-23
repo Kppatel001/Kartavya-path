@@ -170,30 +170,34 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: paper?.title || 'Exam Paper',
-          text: `કર્તવ્ય પથ દ્વારા તૈયાર કરાયેલ પ્રશ્નપત્ર: ${paper?.title}`,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
+    const shareData = {
+      title: paper?.title || 'Exam Paper',
+      text: `કર્તવ્ય પથ દ્વારા તૈયાર કરાયેલ પ્રશ્નપત્ર: ${paper?.title || 'પરીક્ષા પ્રશ્નપત્ર'}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
       }
-    } else {
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        toast({
-          title: 'લિંક કોપી થઈ ગઈ',
-          description: 'શેર કરવા માટે લિંક તમારા ક્લિપબોર્ડમાં કોપી કરવામાં આવી છે.',
-        });
-      } catch (err) {
-        toast({
-          variant: 'destructive',
-          title: 'ભૂલ',
-          description: 'લિંક કોપી કરી શકાઈ નથી.',
-        });
-      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+      console.error('Share failed, trying fallback:', error);
+    }
+
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: 'લિંક કોપી થઈ ગઈ',
+        description: 'શેર કરવા માટે લિંક તમારા ક્લિપબોર્ડમાં કોપી કરવામાં આવી છે.',
+      });
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'ભૂલ',
+        description: 'લિંક કોપી કરી શકાઈ નથી. કૃપા કરીને URL મેન્યુઅલી કોપી કરો.',
+      });
     }
   };
 
