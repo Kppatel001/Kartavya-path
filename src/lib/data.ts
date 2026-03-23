@@ -175,8 +175,8 @@ export const subjects = [
   "તત્વજ્ઞાન (Philosophy)",
   "સમાજશાસ્ત્ર (Sociology)",
   "કમ્પ્યુટર (Computer)",
-  "ચિત્રકામ (Art)",
-  "સામાન્ય જ્ઞાન (G.K.)"
+  "સામાન્ય જ્ઞાન (G.K.)",
+  "ચિત્રકામ (Art)"
 ];
 
 export const languages = [

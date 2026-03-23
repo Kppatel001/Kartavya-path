@@ -48,7 +48,7 @@ const generateBoardAlignedExamPaperPrompt = ai.definePrompt({
   name: 'generateBoardAlignedExamPaperPrompt',
   input: {schema: GenerateBoardAlignedExamPaperInputSchema},
   output: {schema: GenerateBoardAlignedExamPaperOutputSchema},
-  prompt: `You are an expert in generating board-aligned exam papers for Gujarat Secondary and Higher Secondary Education Board (GSEB).
+  prompt: `You are an expert in generating board-aligned exam papers for Gujarat Secondary and Higher Secondary Education Board (GSEB) and GCERT.
 
 Generate a complete exam paper based on these details:
 State: Gujarat
@@ -60,40 +60,53 @@ Total Marks: {{{totalMarks}}}
 Language: {{{language}}}
 Exam Type: {{{examType}}}
 
-DIRECTIONS FOR GSEB STANDARDS:
-- For Primary (Standard 1 to 5): Focus on simple, activity-based questions. Use 'વિભાગ A' for basic knowledge and 'વિભાગ B' for drawing/matching/short answers.
-- For Upper Primary (Standard 6 to 8): Use Sections A, B, C. Section A should be 1-mark objective questions.
-- For Secondary (Standard 9 & 10): STRICTLY follow the A, B, C, D pattern.
-- For Higher Secondary (Standard 11 & 12):
-  - Science: Physics/Chemistry/Biology should have Part A (MCQs) and Part B (Descriptive).
-  - Commerce/Arts: Follow the A, B, C, D, E, F section pattern where Section E and F are for 4-5 marks questions.
+DIRECTIONS FOR GSEB STANDARDS (BACKEND BLUEPRINTS):
+If the user has not provided a manual blueprint, apply these official GSEB/GCERT marking schemes:
+
+1. PRIMARY (Std 1 to 5):
+   - Focus: Activity-based, basic understanding.
+   - Layout: 
+     Section A: Objective (Fill blanks, Match, True/False) - 40% weight.
+     Section B: Very Short Answer (1 line) - 30% weight.
+     Section C: Simple drawing or practical application - 30% weight.
+
+2. UPPER PRIMARY (Std 6 to 8):
+   - Focus: Conceptual clarity.
+   - Layout:
+     વિભાગ A: 1-mark Objective (MCQ, VSA) - 20% weight.
+     વિભાગ B: 2-marks Short Answer - 40% weight.
+     વિભાગ C: 3-marks Long Answer - 40% weight.
+
+3. SECONDARY (Std 9 & 10):
+   - STRICTLY use the 80-mark Board Pattern scaled to {{{totalMarks}}}:
+     વિભાગ A (Section A): હેતુલક્ષી પ્રશ્નો (MCQs, VSA, Fill in blanks, True/False, Match) - 1 mark each (20% weight).
+     વિભાગ B (Section B): ટૂંક જવાબી પ્રશ્નો (Answer in 2-3 sentences) - 2 marks each (25% weight).
+     વિભાગ C (Section C): મુદ્દાસર ઉત્તર આપો (Answer in 5-6 sentences) - 3 marks each (30% weight).
+     વિભાગ D (Section D): સવિસ્તાર ઉત્તર આપો (Detailed Answer/Problem Solving) - 4/5 marks each (25% weight).
+
+4. HIGHER SECONDARY (Std 11 & 12):
+   - Science Stream: Part A (50 MCQs for OMR) and Part B (Descriptive A, B, C, D). Scale to {{{totalMarks}}}.
+   - Commerce/Arts: Sections A through F. Section E and F must contain long answers/essays/accounts/sums.
 
 {{#if blueprintText}}
-STRUCTURE / BLUEPRINT DETAILS PROVIDED BY USER:
+USER PROVIDED CUSTOM BLUEPRINT / STRUCTURE:
 {{{blueprintText}}}
+Apply this structure strictly.
 {{else}}
-If no blueprint is provided, apply the standard GSEB/GCERT marking scheme for the specified subject and marks.
+NO BLUEPRINT PROVIDED. Apply the standard GSEB/GCERT "Backend Blueprint" defined above for Std {{{classLevel}}} and Subject {{{subject}}}.
 {{/if}}
 
-The exam paper must follow a clean, structured format:
+FORMATTING RULES:
+- Use standard Gujarati terminology: "પ્રશ્નપત્ર", "વિષય", "ધોરણ", "કુલ ગુણ", "સમય".
+- Section headers must be bold: "--- વિભાગ A (હેતુલક્ષી પ્રશ્નો) ---".
+- Number questions clearly (1, 2, 3...).
+- Total marks must sum exactly to {{{totalMarks}}}.
+- Include internal choices (અથવા) where appropriate for higher standards (Std 9-12).
 
-1. STRUCTURE (GSEB Pattern):
-   - વિભાગ A (Section A): હેતુલક્ષી પ્રશ્નો (MCQs, True/False, Fill in the blanks) - 1 mark each.
-   - વિભાગ B (Section B): ટૂંક જવાબી પ્રશ્નો (Short Answer) - 2 marks each.
-   - વિભાગ C (Section C): સવિસ્તાર પ્રશ્નો (Descriptive) - 3 marks each.
-   - વિભાગ D (Section D): લાંબા પ્રશ્નો (Long Answer / Essays) - 4 or 5 marks each.
+ANSWER KEY REQUIREMENT:
+At the very end, include: "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---" with correct options and brief hints.
 
-2. FORMATTING RULES:
-   - Use clear headers for each section, e.g., "--- વિભાગ A ---".
-   - Number each question clearly (1, 2, 3...).
-   - Ensure the marks distribution matches exactly {{{totalMarks}}}.
-   - Use standard GCERT/GSEB terminology in Gujarati.
-
-3. ANSWER KEY REQUIREMENT:
-   At the very end of the paper, add "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---".
-   Provide solutions for all sections.
-
-Output the content in શુદ્ધ Gujarati.`,
+Output the content in clean, professional Gujarati.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
