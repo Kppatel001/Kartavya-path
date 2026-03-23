@@ -19,7 +19,10 @@ service cloud.firestore {
 
     match /papers/{paperId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Allow anyone to read a paper if they have the ID (for sharing)
+      allow read: if true;
+      // Only the owner can update or delete
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     match /mastery/{masteryId} {

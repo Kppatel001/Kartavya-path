@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -77,6 +78,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
+  const [displayDate, setDisplayDate] = useState('--/--/----');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -88,7 +90,10 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
 
   useEffect(() => {
     setMounted(true);
+    setDisplayDate(format(new Date(), 'dd/MM/yyyy'));
   }, []);
+
+  const isOwner = user && paper && user.uid === paper.userId;
 
   const getVisibleContent = (rawContent: string, showKey: boolean) => {
     if (!rawContent.includes(ANSWER_KEY_DELIMITER)) return rawContent;
@@ -112,16 +117,16 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   };
 
   useEffect(() => {
-    if (user && id) {
+    if (id) {
       getPaper(id)
         .then((fetchedPaper) => {
-          if (fetchedPaper && fetchedPaper.userId === user.uid) {
+          if (fetchedPaper) {
             setPaper(fetchedPaper);
             setContent(fetchedPaper.content);
             const visible = getVisibleContent(fetchedPaper.content, showAnswerKey);
             paginateContent(visible);
           } else {
-            toast({ variant: 'destructive', title: 'ભૂલ', description: 'પેપર મળ્યું નથી.' });
+            toast({ variant: 'destructive', title: 'ભૂલ', description: 'પ્રશ્નપત્ર મળી શક્યું નથી.' });
             router.push('/history');
           }
           setLoading(false);
@@ -131,7 +136,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
           router.push('/history');
         });
     }
-  }, [user, id, router, toast, showAnswerKey]);
+  }, [id, router, toast, showAnswerKey]);
 
   useEffect(() => {
     if (content) {
@@ -147,7 +152,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   }, [chatMessages]);
 
   const handleSave = () => {
-    if (!id) return;
+    if (!id || !isOwner) return;
     startSavingTransition(async () => {
       await updatePaperContent(id, content);
       const visible = getVisibleContent(content, showAnswerKey);
@@ -166,7 +171,9 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         setContent(newContent);
         const visible = getVisibleContent(newContent, showAnswerKey);
         paginateContent(visible);
-        await updatePaperContent(id, newContent);
+        if (isOwner) {
+            await updatePaperContent(id, newContent);
+        }
         toast({ title: 'અનુવાદ સફળ', description: `પેપરનું ${targetLanguage}માં અનુવાદ થઈ ગયું છે.` });
       } catch (error) {
         toast({ variant: 'destructive', title: 'ભૂલ', description: 'અનુવાદ નિષ્ફળ રહ્યો.' });
@@ -187,8 +194,10 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         return;
       }
     } catch (error: any) {
-      if (error.name === 'AbortError') return;
-      // Fall through to clipboard on any other error (like NotAllowedError)
+      // Don't show error if user cancelled or browser denied permission silently
+      if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
+         // Fall through to clipboard
+      }
     }
 
     // Fallback: Copy to clipboard
@@ -285,7 +294,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-sm font-bold border-t border-black pt-3">
             <div className="text-left">વિષય: {paper.settings.subject}</div>
             <div className="text-right">ધોરણ: {paper.settings.classLevel} ({paper.settings.board})</div>
-            <div className="text-left">તારીખ: {mounted ? format(new Date(), 'dd/MM/yyyy') : '--/--/----'}</div>
+            <div className="text-left">તારીખ: {displayDate}</div>
             <div className="text-right">કુલ ગુણ: {paper.settings.totalMarks}</div>
             <div className="text-left">સમય: {paper.settings.timeAllowed || '---'}</div>
         </div>
@@ -299,7 +308,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
       <div className="no-print">
-        <Button variant="ghost" onClick={() => router.push('/history')} className="mb-4">
+        <Button variant="ghost" onClick={() => router.push(user ? '/history' : '/')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> પાછા જાઓ
         </Button>
         <div className="flex justify-between items-center mb-6">
@@ -312,30 +321,31 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
                     <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ: {paper.settings.board}</p>
                 </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleShare} className="shrink-0">
-              <Share2 className="mr-2 h-4 w-4" /> શેર કરો
+            <Button variant="outline" size="sm" onClick={handleShare} className="shrink-0 bg-primary/5 hover:bg-primary/10 border-primary/20">
+              <Share2 className="mr-2 h-4 w-4 text-primary" /> શેર કરો
             </Button>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 no-print bg-card/40 p-3 rounded-xl border border-border/50 backdrop-blur-sm sticky top-20 z-10">
-        {isEditing ? (
+        {isOwner && (
           <>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              સેવ કરો
-            </Button>
-            <Button variant="outline" onClick={() => setIsEditing(false)}>કેન્સલ</Button>
-          </>
-        ) : (
-          <>
-            <Button variant="outline" onClick={() => setIsEditing(true)}>
-              <Pencil className="mr-2 h-4 w-4" /> સુધારો
-            </Button>
+            {isEditing ? (
+              <>
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  સેવ કરો
+                </Button>
+                <Button variant="outline" onClick={() => setIsEditing(false)}>કેન્સલ</Button>
+              </>
+            ) : (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                <Pencil className="mr-2 h-4 w-4" /> સુધારો
+              </Button>
+            )}
+            <div className="w-px h-8 bg-border/50 mx-1 hidden sm:block" />
           </>
         )}
-
-        <div className="w-px h-8 bg-border/50 mx-1 hidden sm:block" />
 
         <Button 
           variant={showAnswerKey ? "default" : "outline"} 
@@ -375,7 +385,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         </Button>
       </div>
       
-      {isEditing ? (
+      {isOwner && isEditing ? (
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -397,6 +407,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> અગાઉનું
               </Button>
+              <div className="text-sm font-medium">પેજ {currentPage} / {pages.length}</div>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(pages.length, p + 1))} disabled={currentPage === pages.length}>
                 આગળનું <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -405,13 +416,13 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {/* Tutor Floating Chat */}
+      {/* Tutor Floating Chat - Only for owners or logged in students for now, but let's keep it for all if paper is loaded */}
       <Button 
         variant="secondary" 
         onClick={() => setChatOpen(true)}
-        className="fixed bottom-6 right-6 shadow-2xl no-print"
+        className="fixed bottom-6 right-6 shadow-2xl no-print bg-primary text-white hover:bg-primary/90"
       >
-        <BrainCircuit className="mr-2 h-4 w-4" /> ટ્યુટર
+        <BrainCircuit className="mr-2 h-4 w-4" /> ટ્યુટરની મદદ લો
       </Button>
 
       {chatOpen && (
@@ -424,6 +435,11 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
           </div>
           <ScrollArea className="flex-1 p-4 bg-muted/30">
             <div className="space-y-4 text-sm">
+              <div className="flex justify-start">
+                <div className="p-3 rounded-2xl bg-card border">
+                  નમસ્તે! હું આ પ્રશ્નપત્ર સમજવામાં તમારી મદદ કરીશ. તમે કોઈ પણ પ્રશ્ન પૂછી શકો છો.
+                </div>
+              </div>
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`p-3 rounded-2xl ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-card border'}`}>
@@ -441,7 +457,9 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
               placeholder="પ્રશ્ન પૂછો..."
               onKeyDown={(e) => e.key === 'Enter' && handleTutorSubmit()}
             />
-            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring}><Send className="h-4 w-4" /></Button>
+            <Button size="icon" onClick={handleTutorSubmit} disabled={isTutoring} className="bg-primary hover:bg-primary/90">
+              {isTutoring ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
       )}
