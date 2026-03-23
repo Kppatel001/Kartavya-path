@@ -77,7 +77,6 @@ export function GenerateForm() {
   const router = useRouter();
   const { toast } = useToast();
   
-  // Hydration handling
   const [mounted, setMounted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -119,11 +118,18 @@ export function GenerateForm() {
   const selectedDistrict = form.watch('district');
   const availableTalukas = selectedDistrict ? talukasByDistrict[selectedDistrict] || [] : [];
   const availableSchools = selectedDistrict ? schoolsByDistrict[selectedDistrict] || [] : [];
-  const watchSections = form.watch('structuredSections');
+  
+  const watchSections = form.watch('structuredSections') || [];
   const watchTotalMarks = form.watch('totalMarks');
 
-  const calculatedTotal = watchSections.reduce((acc, section) => acc + (section.numQuestions * section.marksPerQuestion), 0);
-  const isMarksMatching = calculatedTotal > 0 && calculatedTotal === watchTotalMarks;
+  // Safely calculate total to avoid NaN errors in children attributes
+  const calculatedTotal = watchSections.reduce((acc, section) => {
+    const q = Number(section.numQuestions);
+    const m = Number(section.marksPerQuestion);
+    return acc + (isNaN(q) || isNaN(m) ? 0 : q * m);
+  }, 0);
+
+  const isMarksMatching = calculatedTotal > 0 && calculatedTotal === Number(watchTotalMarks);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -625,7 +631,7 @@ export function GenerateForm() {
                           <p className="text-sm text-muted-foreground">ગણતરી મુજબ કુલ ગુણ:</p>
                           <div className="flex items-center gap-2 justify-end">
                              <span className={`text-2xl font-black ${isMarksMatching ? 'text-green-500' : 'text-destructive'}`}>
-                                {calculatedTotal}
+                                {String(calculatedTotal)}
                              </span>
                              <span className="text-muted-foreground">/ {watchTotalMarks || 0}</span>
                              {isMarksMatching ? (
