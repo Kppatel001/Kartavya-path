@@ -99,7 +99,7 @@ export function GenerateForm() {
       classLevel: '',
       subject: '',
       chapters: '',
-      totalMarks: undefined as any,
+      totalMarks: '' as any, // Initialize as empty string to avoid uncontrolled to controlled error
       language: '',
       schoolName: '',
       timeAllowed: '',
@@ -265,7 +265,7 @@ export function GenerateForm() {
                         form.setValue('taluka', '');
                         form.setValue('schoolName', '');
                         setIsCustomSchoolMode(false);
-                      }} value={field.value}>
+                      }} value={field.value || ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="જિલ્લો પસંદ કરો" />
@@ -288,7 +288,7 @@ export function GenerateForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>તાલુકો / શહેર</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrict}>
+                      <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedDistrict}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="તાલુકો પસંદ કરો" />
@@ -314,14 +314,14 @@ export function GenerateForm() {
                       {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
-                            <Input placeholder="શાળાનું નામ લખો" {...field} autoFocus />
+                            <Input placeholder="શાળાનું નામ લખો" {...field} value={field.value || ''} autoFocus />
                           </FormControl>
                           <Button type="button" variant="outline" size="icon" onClick={() => setIsCustomSchoolMode(false)}><X className="h-4 w-4" /></Button>
                         </div>
                       ) : (
                         <Select 
                           onValueChange={(val) => val === 'ADD_NEW' ? setIsCustomSchoolMode(true) : field.onChange(val)} 
-                          value={field.value} 
+                          value={field.value || ''} 
                           disabled={!selectedDistrict}
                         >
                           <FormControl>
@@ -357,7 +357,7 @@ export function GenerateForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>પરીક્ષાનો પ્રકાર</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="પરીક્ષાનો પ્રકાર પસંદ કરો" />
@@ -380,7 +380,7 @@ export function GenerateForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>ધોરણ</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="ધોરણ પસંદ કરો" />
@@ -402,7 +402,7 @@ export function GenerateForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>વિષય</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="વિષય પસંદ કરો" />
@@ -425,7 +425,13 @@ export function GenerateForm() {
                     <FormItem>
                       <FormLabel>કુલ ગુણ</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="font-bold text-lg" placeholder="કુલ ગુણ લખો (દા.ત. ૨૫)" />
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          value={field.value || ''} 
+                          className="font-bold text-lg" 
+                          placeholder="કુલ ગુણ લખો (દા.ત. ૨૫)" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -438,7 +444,11 @@ export function GenerateForm() {
                     <FormItem>
                       <FormLabel>સમય મર્યાદા</FormLabel>
                       <FormControl>
-                        <Input placeholder="સમય મર્યાદા લખો (દા.ત. ૧ કલાક, ૨ કલાક)" {...field} />
+                        <Input 
+                          placeholder="સમય મર્યાદા લખો (દા.ત. ૧ કલાક, ૨ કલાક)" 
+                          {...field} 
+                          value={field.value || ''} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -450,7 +460,7 @@ export function GenerateForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>માધ્યમ / ભાષા</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="ભાષા પસંદ કરો" />
@@ -474,7 +484,11 @@ export function GenerateForm() {
                   <FormItem>
                     <FormLabel>પ્રકરણો / ટોપિક્સ (અલ્પવિરામ થી અલગ કરો)</FormLabel>
                     <FormControl>
-                      <Input placeholder="દા.ત. બીજગણિત, સંભાવના, પાયથાગોરસનો પ્રમેય" {...field} />
+                      <Input 
+                        placeholder="દા.ત. બીજગણિત, સંભાવના, પાયથાગોરસનો પ્રમેય" 
+                        {...field} 
+                        value={field.value || ''} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -525,7 +539,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">વિભાગ</FormLabel>
-                                <FormControl><Input {...field} placeholder="દા.ત. વિભાગ A" /></FormControl>
+                                <FormControl><Input {...field} value={field.value || ''} placeholder="દા.ત. વિભાગ A" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -535,7 +549,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્ન પ્રકાર</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder="પ્રકાર પસંદ કરો" />
@@ -557,7 +571,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્નો</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="સંખ્યા" /></FormControl>
+                                <FormControl><Input type="number" {...field} value={field.value || ''} placeholder="સંખ્યા" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -567,7 +581,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">ગુણ (દરેક)</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="ગુણ" /></FormControl>
+                                <FormControl><Input type="number" {...field} value={field.value || ''} placeholder="ગુણ" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -577,7 +591,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">મુશ્કેલી</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder="કક્ષા" />
@@ -606,8 +620,8 @@ export function GenerateForm() {
                           id: Math.random().toString(), 
                           name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
                           questionType: 'SA', 
-                          numQuestions: undefined as any, 
-                          marksPerQuestion: undefined as any, 
+                          numQuestions: '' as any, 
+                          marksPerQuestion: '' as any, 
                           difficulty: 'સામાન્ય' 
                         })}
                       >
@@ -682,6 +696,7 @@ export function GenerateForm() {
                             placeholder="અહીં તમારા પેપરનું માળખું લખો (દા.ત., વિભાગ A માં ૧૦ MCQs...)" 
                             className="min-h-[120px]"
                             {...field} 
+                            value={field.value || ''}
                           />
                         </FormControl>
                       </FormItem>
