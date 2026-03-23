@@ -99,7 +99,7 @@ export function GenerateForm() {
       classLevel: '',
       subject: '',
       chapters: '',
-      totalMarks: '' as any,
+      totalMarks: 0 as any,
       language: '',
       schoolName: '',
       timeAllowed: '',
@@ -223,7 +223,6 @@ export function GenerateForm() {
   }
 
   const onInvalid = (errors: any) => {
-    console.error('Validation Errors:', errors);
     toast({
       variant: 'destructive',
       title: 'માહિતી અધૂરી છે',
@@ -231,14 +230,7 @@ export function GenerateForm() {
     });
   };
 
-  if (!mounted) {
-    return (
-      <Card className="border-border bg-card shadow-2xl p-20 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-muted-foreground animate-pulse">લોડ થઈ રહ્યું છે...</p>
-      </Card>
-    );
-  }
+  if (!mounted) return null;
 
   return (
     <Card className="border-border bg-card shadow-2xl overflow-hidden">
@@ -459,7 +451,7 @@ export function GenerateForm() {
                         <Input 
                           type="number" 
                           {...field} 
-                          value={field.value || ''} 
+                          value={field.value || 0} 
                           className="font-bold text-lg" 
                           placeholder="કુલ ગુણ લખો (દા.ત. ૨૫)" 
                         />
@@ -531,7 +523,7 @@ export function GenerateForm() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-primary/20 pb-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-bold">બ્લુપ્રિન્ટ બિલ્ડર (વિભાગ મુજબ)</h3>
+                  <h3 className="text-xl font-bold">બ્લુપ્રિન્ટ બિલ્ડર (વૈકલ્પિક)</h3>
                 </div>
                 <div className="flex gap-2">
                   <Button 
@@ -602,7 +594,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્નો</FormLabel>
-                                <FormControl><Input type="number" {...field} value={field.value || ''} placeholder="સંખ્યા" /></FormControl>
+                                <FormControl><Input type="number" {...field} value={field.value || 0} placeholder="સંખ્યા" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -612,7 +604,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">ગુણ (દરેક)</FormLabel>
-                                <FormControl><Input type="number" {...field} value={field.value || ''} placeholder="ગુણ" /></FormControl>
+                                <FormControl><Input type="number" {...field} value={field.value || 0} placeholder="ગુણ" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -651,8 +643,8 @@ export function GenerateForm() {
                           id: Math.random().toString(), 
                           name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
                           questionType: 'SA', 
-                          numQuestions: '' as any, 
-                          marksPerQuestion: '' as any, 
+                          numQuestions: 0, 
+                          marksPerQuestion: 0, 
                           difficulty: 'સામાન્ય' 
                         })}
                       >
@@ -666,7 +658,7 @@ export function GenerateForm() {
                           <p className="text-sm text-muted-foreground">ગણતરી મુજબ કુલ ગુણ:</p>
                           <div className="flex items-center gap-2 justify-end">
                              <span className={`text-2xl font-black ${isMarksMatching || fields.length === 0 ? 'text-green-500' : 'text-destructive'}`}>
-                                {String(calculatedTotal || 0)}
+                                {Number.isNaN(calculatedTotal) ? 0 : calculatedTotal}
                              </span>
                              <span className="text-muted-foreground">/ {watchTotalMarks || 0}</span>
                              {(isMarksMatching || fields.length === 0) ? (
@@ -741,7 +733,7 @@ export function GenerateForm() {
           <CardFooter className="bg-muted/30 border-t p-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Info className="h-4 w-4" />
-              <span>બધી વિગતો ફરજિયાત નથી. તમે સીધું પેપર બનાવી શકો છો.</span>
+              <span>જો કોઈ વિગત અધૂરી હશે, તો એઆઈ બોર્ડના ધોરણો મુજબ પેપર બનાવશે.</span>
             </div>
             <Button 
               type="submit" 

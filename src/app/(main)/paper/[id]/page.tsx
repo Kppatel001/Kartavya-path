@@ -62,6 +62,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   const router = useRouter();
   const { toast } = useToast();
   
+  const [mounted, setMounted] = useState(false);
   const [paper, setPaper] = useState<ExamPaper | null>(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -84,6 +85,10 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
   const [currentQuery, setCurrentQuery] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getVisibleContent = (rawContent: string, showKey: boolean) => {
     if (!rawContent.includes(ANSWER_KEY_DELIMITER)) return rawContent;
@@ -176,17 +181,14 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
       url: window.location.href,
     };
 
-    // Attempt to use the Web Share API if available and permitted
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share(shareData);
-        // Successful share
         return;
-      } catch (error: any) {
-        // If user cancelled (AbortError), just stop.
-        if (error.name === 'AbortError') return;
-        // For other errors like NotAllowedError, silently fall back to clipboard
       }
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+      // Fall through to clipboard on any other error (like NotAllowedError)
     }
 
     // Fallback: Copy to clipboard
@@ -197,14 +199,12 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
           title: 'લિંક કોપી થઈ ગઈ',
           description: 'શેર કરવા માટે લિંક તમારા ક્લિપબોર્ડમાં કોપી કરવામાં આવી છે.',
         });
-      } else {
-        throw new Error('Clipboard API unavailable');
       }
     } catch (err) {
       toast({
         variant: 'destructive',
         title: 'ભૂલ',
-        description: 'લિંક કોપી કરી શકાઈ નથી. કૃપા કરીને URL મેન્યુઅલી કોપી કરો.',
+        description: 'લિંક કોપી કરી શકાઈ નથી.',
       });
     }
   };
@@ -285,7 +285,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-sm font-bold border-t border-black pt-3">
             <div className="text-left">વિષય: {paper.settings.subject}</div>
             <div className="text-right">ધોરણ: {paper.settings.classLevel} ({paper.settings.board})</div>
-            <div className="text-left">તારીખ: {format(new Date(), 'dd/MM/yyyy')}</div>
+            <div className="text-left">તારીખ: {mounted ? format(new Date(), 'dd/MM/yyyy') : '--/--/----'}</div>
             <div className="text-right">કુલ ગુણ: {paper.settings.totalMarks}</div>
             <div className="text-left">સમય: {paper.settings.timeAllowed || '---'}</div>
         </div>
