@@ -126,7 +126,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
           router.push('/history');
         });
     }
-  }, [user, id, router, toast]);
+  }, [user, id, router, toast, showAnswerKey]);
 
   useEffect(() => {
     if (content) {
@@ -176,22 +176,30 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
       url: window.location.href,
     };
 
-    try {
-      if (navigator.share) {
+    // Attempt to use the Web Share API if available and permitted
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
         await navigator.share(shareData);
+        // Successful share
         return;
+      } catch (error: any) {
+        // If user cancelled (AbortError), just stop.
+        if (error.name === 'AbortError') return;
+        // For other errors like NotAllowedError, silently fall back to clipboard
       }
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
-      console.error('Share failed, trying fallback:', error);
     }
 
+    // Fallback: Copy to clipboard
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: 'લિંક કોપી થઈ ગઈ',
-        description: 'શેર કરવા માટે લિંક તમારા ક્લિપબોર્ડમાં કોપી કરવામાં આવી છે.',
-      });
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: 'લિંક કોપી થઈ ગઈ',
+          description: 'શેર કરવા માટે લિંક તમારા ક્લિપબોર્ડમાં કોપી કરવામાં આવી છે.',
+        });
+      } else {
+        throw new Error('Clipboard API unavailable');
+      }
     } catch (err) {
       toast({
         variant: 'destructive',
