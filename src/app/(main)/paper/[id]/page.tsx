@@ -26,7 +26,8 @@ import {
   EyeOff,
   Volume2,
   VolumeX,
-  FileText
+  FileText,
+  Share2
 } from 'lucide-react';
 import {
   Dialog,
@@ -168,6 +169,34 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
     });
   };
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: paper?.title || 'Exam Paper',
+          text: `કર્તવ્ય પથ દ્વારા તૈયાર કરાયેલ પ્રશ્નપત્ર: ${paper?.title}`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: 'લિંક કોપી થઈ ગઈ',
+          description: 'શેર કરવા માટે લિંક તમારા ક્લિપબોર્ડમાં કોપી કરવામાં આવી છે.',
+        });
+      } catch (err) {
+        toast({
+          variant: 'destructive',
+          title: 'ભૂલ',
+          description: 'લિંક કોપી કરી શકાઈ નથી.',
+        });
+      }
+    }
+  };
+
   const handleSpeakConcept = async () => {
     if (isSpeaking) {
       audioRef.current?.pause();
@@ -271,6 +300,9 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
                     <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ: {paper.settings.board}</p>
                 </div>
             </div>
+            <Button variant="outline" size="sm" onClick={handleShare} className="shrink-0">
+              <Share2 className="mr-2 h-4 w-4" /> શેર કરો
+            </Button>
         </div>
       </div>
 
