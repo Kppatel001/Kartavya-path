@@ -49,8 +49,8 @@ const sectionSchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'વિભાગનું નામ લખો'),
   questionType: z.enum(['MCQ', 'VSA', 'SA', 'LA']),
-  numQuestions: z.coerce.number().min(1),
-  marksPerQuestion: z.coerce.number().min(1),
+  numQuestions: z.coerce.number().min(0),
+  marksPerQuestion: z.coerce.number().min(0),
   difficulty: z.enum(['સામાન્ય', 'મધ્યમ', 'અઘરું']),
 });
 
@@ -99,7 +99,7 @@ export function GenerateForm() {
       classLevel: '',
       subject: '',
       chapters: '',
-      totalMarks: '' as any, // Initialize as empty string to avoid uncontrolled to controlled error
+      totalMarks: '' as any,
       language: '',
       schoolName: '',
       timeAllowed: '',
@@ -122,9 +122,9 @@ export function GenerateForm() {
   const watchTotalMarks = form.watch('totalMarks');
 
   const calculatedTotal = watchSections.reduce((acc, section) => {
-    const q = Number(section.numQuestions);
-    const m = Number(section.marksPerQuestion);
-    return acc + (isNaN(q) || isNaN(m) ? 0 : q * m);
+    const q = Number(section.numQuestions) || 0;
+    const m = Number(section.marksPerQuestion) || 0;
+    return acc + (q * m);
   }, 0);
 
   const isMarksMatching = calculatedTotal > 0 && calculatedTotal === Number(watchTotalMarks);
@@ -222,6 +222,15 @@ export function GenerateForm() {
     }
   }
 
+  const onInvalid = (errors: any) => {
+    console.error('Validation Errors:', errors);
+    toast({
+      variant: 'destructive',
+      title: 'માહિતી અધૂરી છે',
+      description: 'કૃપા કરીને લાલ રંગમાં દર્શાવેલ તમામ વિગતો યોગ્ય રીતે ભરો.',
+    });
+  };
+
   if (!mounted) {
     return (
       <Card className="border-border bg-card shadow-2xl p-20 flex flex-col items-center justify-center gap-4">
@@ -234,7 +243,7 @@ export function GenerateForm() {
   return (
     <Card className="border-border bg-card shadow-2xl overflow-hidden">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
           <CardHeader className="bg-primary/5 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-2xl">
@@ -368,6 +377,28 @@ export function GenerateForm() {
                           <SelectItem value="પ્રથમ સત્રાંત">પ્રથમ સત્રાંત પરીક્ષા</SelectItem>
                           <SelectItem value="વાર્ષિક પરીક્ષા">વાર્ષિક પરીક્ષા (Final Exam)</SelectItem>
                           <SelectItem value="પ્રી-બોર્ડ">પ્રી-બોર્ડ પરીક્ષા</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="board"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>બોર્ડ</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="બોર્ડ પસંદ કરો" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {educationBoards.map((b) => (
+                            <SelectItem key={b} value={b}>{b}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
