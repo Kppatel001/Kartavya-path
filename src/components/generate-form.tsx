@@ -76,6 +76,9 @@ export function GenerateForm() {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  
+  // Hydration handling
+  const [mounted, setMounted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -84,10 +87,14 @@ export function GenerateForm() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      state: 'Gujarat',
+      state: '',
       district: '',
       taluka: '',
       board: '',
@@ -222,6 +229,15 @@ export function GenerateForm() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <Card className="border-border bg-card shadow-2xl p-20 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse">લોડ થઈ રહ્યું છે...</p>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-border bg-card shadow-2xl overflow-hidden">
       <Form {...form}>
@@ -238,7 +254,6 @@ export function GenerateForm() {
           </CardHeader>
           
           <CardContent className="space-y-10 p-6 sm:p-8">
-            {/* School & Location Section */}
             <div className="space-y-6">
               <div className="flex items-center gap-2 border-b-2 border-primary/20 pb-2">
                 <MapPin className="h-5 w-5 text-primary" />
@@ -259,7 +274,9 @@ export function GenerateForm() {
                         setIsCustomSchoolMode(false);
                       }} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="જિલ્લો પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="જિલ્લો પસંદ કરો" />
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {districtsOfGujarat.map((d) => (
@@ -280,7 +297,9 @@ export function GenerateForm() {
                       <FormLabel>તાલુકો / શહેર</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrict}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="તાલુકો પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="તાલુકો પસંદ કરો" />
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {availableTalukas.map((t) => (
@@ -313,7 +332,9 @@ export function GenerateForm() {
                           disabled={!selectedDistrict}
                         >
                           <FormControl>
-                            <SelectTrigger><SelectValue placeholder="શાળા પસંદ કરો અથવા નવી ઉમેરો" /></SelectTrigger>
+                            <SelectTrigger>
+                              <SelectValue placeholder="શાળા પસંદ કરો અથવા નવી ઉમેરો" />
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {availableSchools.map((s) => (
@@ -330,7 +351,6 @@ export function GenerateForm() {
               </div>
             </div>
 
-            {/* Exam Details Section */}
             <div className="space-y-6 pt-4 border-t border-border">
               <div className="flex items-center gap-2 border-b-2 border-primary/20 pb-2">
                 <FileText className="h-5 w-5 text-primary" />
@@ -346,7 +366,9 @@ export function GenerateForm() {
                       <FormLabel>પરીક્ષાનો પ્રકાર</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="પરીક્ષાનો પ્રકાર પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="પરીક્ષાનો પ્રકાર પસંદ કરો" />
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="એકમ કસોટી">એકમ કસોટી (Unit Test)</SelectItem>
@@ -367,7 +389,9 @@ export function GenerateForm() {
                       <FormLabel>ધોરણ</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="ધોરણ પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="ધોરણ પસંદ કરો" />
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {classLevels.map((level) => (
@@ -387,7 +411,9 @@ export function GenerateForm() {
                       <FormLabel>વિષય</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="વિષય પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="વિષય પસંદ કરો" />
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {subjects.map((subject) => (
@@ -433,7 +459,9 @@ export function GenerateForm() {
                       <FormLabel>માધ્યમ / ભાષા</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="ભાષા પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="ભાષા પસંદ કરો" />
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {languages.map((lang) => (
@@ -461,7 +489,6 @@ export function GenerateForm() {
               />
             </div>
 
-            {/* Structured Blueprint Section */}
             <div className="space-y-6 pt-4 border-t border-border">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-primary/20 pb-2">
                 <div className="flex items-center gap-2">
@@ -516,7 +543,11 @@ export function GenerateForm() {
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્ન પ્રકાર</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="પ્રકાર પસંદ કરો" /></SelectTrigger></FormControl>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="પ્રકાર પસંદ કરો" />
+                                    </SelectTrigger>
+                                  </FormControl>
                                   <SelectContent>
                                     <SelectItem value="MCQ">MCQ (વૈકલ્પિક)</SelectItem>
                                     <SelectItem value="VSA">VSA (એક વાક્ય)</SelectItem>
@@ -554,7 +585,11 @@ export function GenerateForm() {
                               <FormItem>
                                 <FormLabel className="text-xs">મુશ્કેલી</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="કક્ષા પસંદ કરો" /></SelectTrigger></FormControl>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="કક્ષા પસંદ કરો" />
+                                    </SelectTrigger>
+                                  </FormControl>
                                   <SelectContent>
                                     <SelectItem value="સામાન્ય">સામાન્ય</SelectItem>
                                     <SelectItem value="મધ્યમ">મધ્યમ</SelectItem>
@@ -634,7 +669,7 @@ export function GenerateForm() {
                             <div className="p-4 bg-muted rounded-full group-hover:bg-primary/10 transition-colors"><Upload className="h-10 w-10 text-muted-foreground group-hover:text-primary" /></div>
                             <div className="text-center">
                                 <p className="font-bold">બ્લુપ્રિન્ટ ફાઈલ અપલોડ કરો</p>
-                                <p className="text-sm text-muted-foreground">PDF અથવા ઈમેજ દ્વારા AI આપોઆપ માળખું શોધી લેશે</p>
+                                <p className="text-sm text-muted-foreground">PDF અથવા ઈમેજ દ્વારા એઆઈ આપોઆપ માળખું શોધી લેશે</p>
                             </div>
                         </div>
                     )}
