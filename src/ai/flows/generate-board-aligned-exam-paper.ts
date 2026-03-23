@@ -25,8 +25,22 @@ const GenerateBoardAlignedExamPaperOutputSchema = z.object({
 
 export type GenerateBoardAlignedExamPaperOutput = z.infer<typeof GenerateBoardAlignedExamPaperOutputSchema>;
 
-export async function generateBoardAlignedExamPaper(input: GenerateBoardAlignedExamPaperInput): Promise<GenerateBoardAlignedExamPaperOutput> {
-  return generateBoardAlignedExamPaperFlow(input);
+// Server Action Wrapper with robust error handling to prevent "Server Components render" crash
+export async function generateBoardAlignedExamPaper(input: GenerateBoardAlignedExamPaperInput) {
+  try {
+    const result = await generateBoardAlignedExamPaperFlow(input);
+    if (!result || !result.examPaper) {
+      return { success: false, error: "AI પ્રશ્નપત્ર તૈયાર કરવામાં નિષ્ફળ રહ્યું. કૃપા કરીને ફરી પ્રયાસ કરો." };
+    }
+    return { success: true, examPaper: result.examPaper };
+  } catch (error: any) {
+    console.error("Genkit Flow Critical Error:", error);
+    // Return a plain object instead of throwing to prevent Next.js production error omission
+    return { 
+      success: false, 
+      error: error.message || "સર્વર કનેક્શનમાં સમસ્યા છે. કૃપા કરીને ઇન્ટરનેટ ચેક કરો." 
+    };
+  }
 }
 
 const generateBoardAlignedExamPaperPrompt = ai.definePrompt({
@@ -59,17 +73,15 @@ The exam paper must follow a clean, structured format:
 
 2. FORMATTING RULES:
    - Use clear headers for each section, e.g., "--- વિભાગ A ---".
-   - Under each section header, include a short instruction in Gujarati, e.g., "નીચેના પ્રશ્નોના માગ્યા મુજબ ઉત્તર આપો."
    - Number each question clearly (1, 2, 3...).
    - Ensure the marks distribution matches the totalMarks provided.
    - Use standard GCERT/GSEB terminology.
-   - Ensure a clean line spacing between questions.
 
 3. ANSWER KEY REQUIREMENT:
    At the very end of the paper, add "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---".
-   Provide step-by-step solutions for Section B, C, and D based on marks.
+   Provide solutions for all sections.
 
-Output the content in શુદ્ધ Gujarati, with a structure that is easy to read and print.`,
+Output the content in શુદ્ધ Gujarati.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
@@ -79,15 +91,7 @@ const generateBoardAlignedExamPaperFlow = ai.defineFlow(
     outputSchema: GenerateBoardAlignedExamPaperOutputSchema,
   },
   async input => {
-    try {
-      const {output} = await generateBoardAlignedExamPaperPrompt(input);
-      if (!output) {
-        throw new Error('AI failed to generate a response. Please try again.');
-      }
-      return output;
-    } catch (error: any) {
-      console.error("Genkit Flow Error:", error);
-      throw new Error(error.message || "નિષ્ફળતા: પ્રશ્નપત્ર તૈયાર કરવામાં સમસ્યા આવી છે.");
-    }
+    const {output} = await generateBoardAlignedExamPaperPrompt(input);
+    return output!;
   }
 );

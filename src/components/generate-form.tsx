@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -65,7 +65,6 @@ export function GenerateForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [schoolLogoDataUri, setSchoolLogoDataUri] = useState<string | null>(null);
   const [isCustomSchoolMode, setIsCustomSchoolMode] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,11 +133,16 @@ export function GenerateForm() {
 
     setIsGenerating(true);
     try {
-      const result = await generateBoardAlignedExamPaper({
+      // Calling Server Action and handling serialized result
+      const response = await generateBoardAlignedExamPaper({
         ...values,
         state: 'Gujarat'
       });
       
+      if (!response.success) {
+        throw new Error(response.error || "પેપર તૈયાર કરવામાં અજ્ઞાત ભૂલ આવી છે.");
+      }
+
       const paperSettings: ExamPaperSettings = {
         state: values.state,
         district: values.district,
@@ -152,12 +156,12 @@ export function GenerateForm() {
         schoolName: values.schoolName,
         timeAllowed: values.timeAllowed,
         blueprintText: values.blueprintText || "",
-        schoolLogo: schoolLogoDataUri || ""
+        schoolLogo: ""
       };
 
       const title = `${values.subject} - ધોરણ ${values.classLevel} (${values.board})`;
 
-      const paperId = await addPaper(user.uid, title, paperSettings, result.examPaper);
+      const paperId = await addPaper(user.uid, title, paperSettings, response.examPaper!);
 
       toast({ title: 'પેપર સફળતાપૂર્વક બન્યું!', description: 'નવું પેપર જોવા માટે રીડાયરેક્ટ થઈ રહ્યું છે.' });
       router.push(`/paper/${paperId}`);
