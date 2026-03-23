@@ -1,3 +1,4 @@
+'use client';
 // IMPORTANT: Replace with your own Firebase project configuration.
 // You can find this in your Firebase project settings.
 // It is strongly recommended to use environment variables for this in a real project.

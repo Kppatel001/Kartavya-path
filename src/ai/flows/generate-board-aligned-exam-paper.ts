@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow to generate board-aligned exam papers for Gujarat Schools (GSEB focus).
@@ -70,7 +69,7 @@ The exam paper must follow a clean, structured format:
    At the very end of the paper, add "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---".
    Provide step-by-step solutions for Section B, C, and D based on marks.
 
-Output the content in শુદ્ધ Gujarati, with a structure that is easy to read and print.`,
+Output the content in શુદ્ધ Gujarati, with a structure that is easy to read and print.`,
 });
 
 const generateBoardAlignedExamPaperFlow = ai.defineFlow(
@@ -80,7 +79,15 @@ const generateBoardAlignedExamPaperFlow = ai.defineFlow(
     outputSchema: GenerateBoardAlignedExamPaperOutputSchema,
   },
   async input => {
-    const {output} = await generateBoardAlignedExamPaperPrompt(input);
-    return output!;
+    try {
+      const {output} = await generateBoardAlignedExamPaperPrompt(input);
+      if (!output) {
+        throw new Error('AI failed to generate a response. Please try again.');
+      }
+      return output;
+    } catch (error: any) {
+      console.error("Genkit Flow Error:", error);
+      throw new Error(error.message || "નિષ્ફળતા: પ્રશ્નપત્ર તૈયાર કરવામાં સમસ્યા આવી છે.");
+    }
   }
 );

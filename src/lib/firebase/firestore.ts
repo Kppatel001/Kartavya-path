@@ -1,3 +1,4 @@
+'use client';
 import { 
   collection, 
   addDoc, 
@@ -28,7 +29,6 @@ export async function createUserProfile(profile: Omit<UserProfile, 'createdAt'>)
       createdAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error creating user profile:", error);
     throw error;
   }
 }
@@ -43,7 +43,6 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     }
     return null;
   } catch (error) {
-    console.error("Error fetching user profile:", error);
     return null;
   }
 }
@@ -62,7 +61,6 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
     });
     return docRef.id;
   } catch (e: any) {
-    console.error("Error adding document to Firestore: ", e);
     throw new Error("Failed to save paper: " + e.message);
   }
 }
@@ -82,7 +80,6 @@ export async function getPapersForUser(userId: string): Promise<ExamPaper[]> {
       return dateB - dateA;
     });
   } catch (error) {
-    console.error("Error fetching papers: ", error);
     return [];
   }
 }
@@ -97,7 +94,6 @@ export async function getPaper(paperId: string): Promise<ExamPaper | null> {
     }
     return null;
   } catch (error) {
-    console.error("Error getting paper:", error);
     return null;
   }
 }
@@ -108,7 +104,6 @@ export async function updatePaperContent(paperId: string, content: string): Prom
   try {
     await updateDoc(docRef, { content });
   } catch (error) {
-    console.error("Error updating paper:", error);
     throw error;
   }
 }
@@ -119,7 +114,6 @@ export async function deletePaper(paperId: string): Promise<void> {
   try {
     await deleteDoc(docRef);
   } catch (error) {
-    console.error("Error deleting paper:", error);
     throw error;
   }
 }
@@ -133,7 +127,6 @@ export async function addFocusSession(userId: string, durationMinutes: number): 
       completedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error adding focus session:", error);
     throw error;
   }
 }
@@ -149,7 +142,6 @@ export async function getMasteryForUser(userId: string): Promise<StudentMastery[
     });
     return mastery;
   } catch (error) {
-    console.error("Error fetching mastery: ", error);
     return [];
   }
 }
@@ -165,7 +157,6 @@ export async function getFocusSessionsForUser(userId: string): Promise<FocusSess
     });
     return sessions;
   } catch (error) {
-    console.error("Error fetching sessions: ", error);
     return [];
   }
 }
