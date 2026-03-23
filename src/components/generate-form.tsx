@@ -304,7 +304,7 @@ export function GenerateForm() {
                       {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
-                            <Input placeholder="શાળાનું નામ" {...field} autoFocus />
+                            <Input placeholder="શાળાનું નામ લખો" {...field} autoFocus />
                           </FormControl>
                           <Button type="button" variant="outline" size="icon" onClick={() => setIsCustomSchoolMode(false)}><X className="h-4 w-4" /></Button>
                         </div>
@@ -369,7 +369,7 @@ export function GenerateForm() {
                       <FormLabel>ધોરણ</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="ધોરણ" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="ધોરણ પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {classLevels.map((level) => (
@@ -389,7 +389,7 @@ export function GenerateForm() {
                       <FormLabel>વિષય</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="વિષય" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="વિષય પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {subjects.map((subject) => (
@@ -408,7 +408,7 @@ export function GenerateForm() {
                     <FormItem>
                       <FormLabel>કુલ ગુણ</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="font-bold text-lg" />
+                        <Input type="number" {...field} className="font-bold text-lg" placeholder="દા.ત. ૨૫" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -435,7 +435,7 @@ export function GenerateForm() {
                       <FormLabel>માધ્યમ / ભાષા</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="ભાષા" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="ભાષા પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {languages.map((lang) => (
@@ -507,7 +507,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">વિભાગ</FormLabel>
-                                <FormControl><Input {...field} placeholder="વિભાગ A" /></FormControl>
+                                <FormControl><Input {...field} placeholder="દા.ત. વિભાગ A" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -518,7 +518,7 @@ export function GenerateForm() {
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્ન પ્રકાર</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                  <FormControl><SelectTrigger><SelectValue placeholder="પ્રકાર" /></SelectTrigger></FormControl>
                                   <SelectContent>
                                     <SelectItem value="MCQ">MCQ (વૈકલ્પિક)</SelectItem>
                                     <SelectItem value="VSA">VSA (એક વાક્ય)</SelectItem>
@@ -535,7 +535,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્નો</FormLabel>
-                                <FormControl><Input type="number" {...field} /></FormControl>
+                                <FormControl><Input type="number" {...field} placeholder="સંખ્યા" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -545,7 +545,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">ગુણ (દરેક)</FormLabel>
-                                <FormControl><Input type="number" {...field} /></FormControl>
+                                <FormControl><Input type="number" {...field} placeholder="ગુણ" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -556,7 +556,7 @@ export function GenerateForm() {
                               <FormItem>
                                 <FormLabel className="text-xs">મુશ્કેલી</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                  <FormControl><SelectTrigger><SelectValue placeholder="કક્ષા" /></SelectTrigger></FormControl>
                                   <SelectContent>
                                     <SelectItem value="સામાન્ય">સામાન્ય</SelectItem>
                                     <SelectItem value="મધ્યમ">મધ્યમ</SelectItem>
