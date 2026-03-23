@@ -90,21 +90,17 @@ export function GenerateForm() {
       state: 'Gujarat',
       district: '',
       taluka: '',
-      board: educationBoards[0],
+      board: '',
       classLevel: '',
       subject: '',
       chapters: '',
-      totalMarks: 25,
-      language: languages[0],
+      totalMarks: undefined as any,
+      language: '',
       schoolName: '',
-      timeAllowed: '1 કલાક',
-      examType: 'એકમ કસોટી',
+      timeAllowed: '',
+      examType: '',
       blueprintText: '',
-      structuredSections: [
-        { id: '1', name: 'વિભાગ A', questionType: 'MCQ', numQuestions: 5, marksPerQuestion: 1, difficulty: 'સામાન્ય' },
-        { id: '2', name: 'વિભાગ B', questionType: 'SA', numQuestions: 5, marksPerQuestion: 2, difficulty: 'મધ્યમ' },
-        { id: '3', name: 'વિભાગ C', questionType: 'LA', numQuestions: 2, marksPerQuestion: 5, difficulty: 'અઘરું' },
-      ],
+      structuredSections: [],
     },
   });
 
@@ -120,7 +116,7 @@ export function GenerateForm() {
   const watchTotalMarks = form.watch('totalMarks');
 
   const calculatedTotal = watchSections.reduce((acc, section) => acc + (section.numQuestions * section.marksPerQuestion), 0);
-  const isMarksMatching = calculatedTotal === watchTotalMarks;
+  const isMarksMatching = calculatedTotal > 0 && calculatedTotal === watchTotalMarks;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -163,11 +159,13 @@ export function GenerateForm() {
       return;
     }
 
-    if (useStructuredBlueprint && !isMarksMatching) {
+    if (useStructuredBlueprint && (fields.length === 0 || !isMarksMatching)) {
       toast({ 
         variant: 'destructive', 
         title: 'ગુણભારની ભૂલ', 
-        description: `વિભાગોના કુલ ગુણ (${calculatedTotal}) અને કુલ ગુણ (${values.totalMarks}) સમાન હોવા જોઈએ.` 
+        description: fields.length === 0 
+          ? 'કૃપા કરીને ઓછામાં ઓછો એક વિભાગ ઉમેરો.' 
+          : `વિભાગોના કુલ ગુણ (${calculatedTotal}) અને કુલ ગુણ (${values.totalMarks}) સમાન હોવા જોઈએ.` 
       });
       return;
     }
@@ -304,7 +302,7 @@ export function GenerateForm() {
                       {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
-                            <Input placeholder="શાળાનું નામ લખો" {...field} autoFocus />
+                            <Input placeholder="શાળાનું નામ લખો (દા.ત. સરસ્વતી વિદ્યાલય)" {...field} autoFocus />
                           </FormControl>
                           <Button type="button" variant="outline" size="icon" onClick={() => setIsCustomSchoolMode(false)}><X className="h-4 w-4" /></Button>
                         </div>
@@ -315,7 +313,7 @@ export function GenerateForm() {
                           disabled={!selectedDistrict}
                         >
                           <FormControl>
-                            <SelectTrigger><SelectValue placeholder="શાળા પસંદ કરો" /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder="શાળા પસંદ કરો અથવા નવી ઉમેરો" /></SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {availableSchools.map((s) => (
@@ -348,7 +346,7 @@ export function GenerateForm() {
                       <FormLabel>પરીક્ષાનો પ્રકાર</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="પ્રકાર પસંદ કરો" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="પરીક્ષાનો પ્રકાર પસંદ કરો" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="એકમ કસોટી">એકમ કસોટી (Unit Test)</SelectItem>
@@ -408,7 +406,7 @@ export function GenerateForm() {
                     <FormItem>
                       <FormLabel>કુલ ગુણ</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="font-bold text-lg" placeholder="દા.ત. ૨૫" />
+                        <Input type="number" {...field} className="font-bold text-lg" placeholder="કુલ ગુણ લખો (દા.ત. ૨૫)" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -421,7 +419,7 @@ export function GenerateForm() {
                     <FormItem>
                       <FormLabel>સમય મર્યાદા</FormLabel>
                       <FormControl>
-                        <Input placeholder="દા.ત., ૨ કલાક" {...field} />
+                        <Input placeholder="સમય મર્યાદા લખો (દા.ત. ૧ કલાક, ૨ કલાક)" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -455,7 +453,7 @@ export function GenerateForm() {
                   <FormItem>
                     <FormLabel>પ્રકરણો / ટોપિક્સ (અલ્પવિરામ થી અલગ કરો)</FormLabel>
                     <FormControl>
-                      <Input placeholder="દા.ત., બીજગણિત, સંભાવના, પાયથાગોરસ" {...field} />
+                      <Input placeholder="દા.ત. બીજગણિત, સંભાવના, પાયથાગોરસનો પ્રમેય" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -518,7 +516,7 @@ export function GenerateForm() {
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્ન પ્રકાર</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="પ્રકાર" /></SelectTrigger></FormControl>
+                                  <FormControl><SelectTrigger><SelectValue placeholder="પ્રકાર પસંદ કરો" /></SelectTrigger></FormControl>
                                   <SelectContent>
                                     <SelectItem value="MCQ">MCQ (વૈકલ્પિક)</SelectItem>
                                     <SelectItem value="VSA">VSA (એક વાક્ય)</SelectItem>
@@ -535,7 +533,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્નો</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="સંખ્યા" /></FormControl>
+                                <FormControl><Input type="number" {...field} placeholder="સંખ્યા લખો" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -545,7 +543,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">ગુણ (દરેક)</FormLabel>
-                                <FormControl><Input type="number" {...field} placeholder="ગુણ" /></FormControl>
+                                <FormControl><Input type="number" {...field} placeholder="ગુણ લખો" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -556,7 +554,7 @@ export function GenerateForm() {
                               <FormItem>
                                 <FormLabel className="text-xs">મુશ્કેલી</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder="કક્ષા" /></SelectTrigger></FormControl>
+                                  <FormControl><SelectTrigger><SelectValue placeholder="કક્ષા પસંદ કરો" /></SelectTrigger></FormControl>
                                   <SelectContent>
                                     <SelectItem value="સામાન્ય">સામાન્ય</SelectItem>
                                     <SelectItem value="મધ્યમ">મધ્યમ</SelectItem>
@@ -579,8 +577,8 @@ export function GenerateForm() {
                         id: Math.random().toString(), 
                         name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
                         questionType: 'SA', 
-                        numQuestions: 2, 
-                        marksPerQuestion: 2, 
+                        numQuestions: undefined as any, 
+                        marksPerQuestion: undefined as any, 
                         difficulty: 'સામાન્ય' 
                       })}
                     >
@@ -594,7 +592,7 @@ export function GenerateForm() {
                              <span className={`text-2xl font-black ${isMarksMatching ? 'text-green-500' : 'text-destructive'}`}>
                                 {calculatedTotal}
                              </span>
-                             <span className="text-muted-foreground">/ {watchTotalMarks}</span>
+                             <span className="text-muted-foreground">/ {watchTotalMarks || 0}</span>
                              {isMarksMatching ? (
                                <CheckCircle2 className="h-5 w-5 text-green-500" />
                              ) : (
@@ -650,7 +648,7 @@ export function GenerateForm() {
                         <FormLabel>માળખું / સૂચનાઓ (વૈકલ્પિક)</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="દા.ત., વિભાગ A માં ૧૦ MCQs, વિભાગ B માં ટૂંક જવાબી પ્રશ્નો..." 
+                            placeholder="અહીં તમારા પેપરનું માળખું લખો (દા.ત., વિભાગ A માં ૧૦ MCQs, વિભાગ B માં ટૂંક જવાબી પ્રશ્નો...)" 
                             className="min-h-[120px]"
                             {...field} 
                           />
@@ -672,7 +670,7 @@ export function GenerateForm() {
               type="submit" 
               size="lg" 
               className="w-full sm:w-auto min-w-[200px] h-14 text-xl font-bold shadow-xl shadow-primary/20" 
-              disabled={isGenerating || isExtracting || (useStructuredBlueprint && !isMarksMatching)}
+              disabled={isGenerating || isExtracting || (useStructuredBlueprint && (fields.length > 0 && !isMarksMatching))}
             >
               {isGenerating ? (
                 <Loader2 className="mr-3 h-6 w-6 animate-spin" />
