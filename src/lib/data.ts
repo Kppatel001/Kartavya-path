@@ -166,7 +166,9 @@ export const subjects = [
   "જીવ વિજ્ઞાન (Biology)", 
   "ઇતિહાસ (History)", 
   "ભૂગોળ (Geography)", 
-  "કમ્પ્યુટર વિજ્ઞાન (Computer Science)"
+  "કમ્પ્યુટર વિજ્ઞાન (Computer Science)",
+  "સામાન્ય જ્ઞાન (General Knowledge)",
+  "કોમ્યુટર (Computer)"
 ];
 
 export const languages = [
