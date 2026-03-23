@@ -99,7 +99,7 @@ export function GenerateForm() {
       classLevel: '',
       subject: '',
       chapters: '',
-      totalMarks: 0 as any,
+      totalMarks: '' as any,
       language: '',
       schoolName: '',
       timeAllowed: '',
@@ -451,7 +451,7 @@ export function GenerateForm() {
                         <Input 
                           type="number" 
                           {...field} 
-                          value={field.value || 0} 
+                          value={field.value ?? ''} 
                           className="font-bold text-lg" 
                           placeholder="કુલ ગુણ લખો (દા.ત. ૨૫)" 
                         />
@@ -594,7 +594,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">પ્રશ્નો</FormLabel>
-                                <FormControl><Input type="number" {...field} value={field.value || 0} placeholder="સંખ્યા" /></FormControl>
+                                <FormControl><Input type="number" {...field} value={field.value ?? ''} placeholder="સંખ્યા" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -604,7 +604,7 @@ export function GenerateForm() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">ગુણ (દરેક)</FormLabel>
-                                <FormControl><Input type="number" {...field} value={field.value || 0} placeholder="ગુણ" /></FormControl>
+                                <FormControl><Input type="number" {...field} value={field.value ?? ''} placeholder="ગુણ" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -643,8 +643,8 @@ export function GenerateForm() {
                           id: Math.random().toString(), 
                           name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
                           questionType: 'SA', 
-                          numQuestions: 0, 
-                          marksPerQuestion: 0, 
+                          numQuestions: 0 as any, 
+                          marksPerQuestion: 0 as any, 
                           difficulty: 'સામાન્ય' 
                         })}
                       >
