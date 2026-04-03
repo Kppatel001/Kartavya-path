@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -53,7 +52,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 
 const LINES_PER_PAGE = 45;
-const ANSWER_KEY_DELIMITER = "--- જવાબવહી / ઉત્તરવલી (Answer Key) ---";
+const ANSWER_KEY_DELIMITER = "--- જવાબવહી (Answer Key) ---";
 
 export default function PaperPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);

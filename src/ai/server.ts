@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -44,7 +43,7 @@ const generatePaperPrompt = ai.definePrompt({
   Rules:
   - Sum of marks must be exactly {{totalMarks}}.
   - Use standard Gujarati headings like "વિભાગ A", "કુલ ગુણ", etc.
-  - Include an Answer Key at the end with "--- જવાબવહી (Answer Key) ---".
+  - Include an Answer Key at the end with exactly this header: "--- જવાબવહી (Answer Key) ---".
   {{#if blueprintText}}Manual Blueprint: {{blueprintText}}{{/if}}`,
 });
 
