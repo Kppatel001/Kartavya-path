@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +98,7 @@ export function GenerateForm() {
       classLevel: '',
       subject: '',
       chapters: '',
-      totalMarks: '' as any,
+      totalMarks: undefined as any,
       language: '',
       schoolName: '',
       timeAllowed: '',
@@ -167,7 +166,7 @@ export function GenerateForm() {
     try {
       const blueprintToUse = useStructuredBlueprint 
         ? (values.structuredSections.length > 0 ? `Structure: ${JSON.stringify(values.structuredSections)} Exam Type: ${values.examType}` : "")
-        : values.blueprintText;
+        : (values.blueprintText || "");
 
       const response = await generateBoardAlignedExamPaper({
         ...values,
@@ -179,21 +178,22 @@ export function GenerateForm() {
         throw new Error(response.error || "પેપર તૈયાર કરવામાં અજ્ઞાત ભૂલ આવી છે.");
       }
 
+      // Important: Firestore does not support 'undefined'. Convert all to null or empty.
       const paperSettings: ExamPaperSettings = {
-        state: values.state,
-        district: values.district,
-        taluka: values.taluka,
-        board: values.board,
-        classLevel: values.classLevel,
-        subject: values.subject,
-        chapters: values.chapters,
-        totalMarks: values.totalMarks,
-        language: values.language,
-        schoolName: values.schoolName,
-        timeAllowed: values.timeAllowed,
-        examType: values.examType,
-        blueprintText: blueprintToUse || "",
-        structuredBlueprint: useStructuredBlueprint && values.structuredSections.length > 0 ? values.structuredSections : undefined,
+        state: values.state || "Gujarat",
+        district: values.district || "",
+        taluka: values.taluka || "",
+        board: values.board || "",
+        classLevel: values.classLevel || "",
+        subject: values.subject || "",
+        chapters: values.chapters || "",
+        totalMarks: Number(values.totalMarks) || 0,
+        language: values.language || "",
+        schoolName: values.schoolName || "",
+        timeAllowed: values.timeAllowed || "",
+        examType: values.examType || "",
+        blueprintText: blueprintToUse,
+        structuredBlueprint: (useStructuredBlueprint && values.structuredSections.length > 0) ? values.structuredSections : [],
         schoolLogo: ""
       };
 

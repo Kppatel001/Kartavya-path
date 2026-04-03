@@ -51,11 +51,15 @@ export async function addPaper(userId: string, title: string, settings: ExamPape
   if (!db) {
     throw new Error("Firestore database is not initialized.");
   }
+
+  // Defensively ensure no undefined fields reach Firestore
+  const sanitizedSettings = JSON.parse(JSON.stringify(settings));
+
   try {
     const docRef = await addDoc(collection(db, papersCollection), {
       userId,
       title,
-      settings,
+      settings: sanitizedSettings,
       content,
       createdAt: serverTimestamp(),
     });
