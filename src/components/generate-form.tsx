@@ -55,15 +55,15 @@ const sectionSchema = z.object({
 
 const formSchema = z.object({
   state: z.string().default('Gujarat'),
-  district: z.string().min(1, 'જિલ્લો પસંદ કરવો ફરજિયાત છે.'),
-  taluka: z.string().min(1, 'તાલુકો પસંદ કરવો ફરજિયાત છે.'),
+  district: z.string().optional(),
+  taluka: z.string().optional(),
   board: z.string().min(1, 'બોર્ડ પસંદ કરવું ફરજિયાત છે.'),
   classLevel: z.string().min(1, 'ધોરણ પસંદ કરવું ફરજિયાત છે.'),
   subject: z.string().min(1, 'વિષય પસંદ કરવો ફરજિયાત છે.'),
   chapters: z.string().min(1, 'ઓછામાં ઓછા એક પ્રકરણનું નામ લખવું ફરજિયાત છે.'),
   totalMarks: z.coerce.number().min(1, 'કુલ ગુણ લખવા ફરજિયાત છે.').max(100, 'કુલ ગુણ 100 થી વધુ ન હોઈ શકે.'),
   language: z.string().min(1, 'ભાષા પસંદ કરવી ફરજિયાત છે.'),
-  schoolName: z.string().min(1, 'શાળાનું નામ લખવું ફરજિયાત છે.'),
+  schoolName: z.string().optional(),
   timeAllowed: z.string().min(1, 'સમય મર્યાદા લખવી ફરજિયાત છે.'),
   examType: z.string().min(1, 'પરીક્ષાનો પ્રકાર પસંદ કરો'),
   blueprintText: z.string().optional(),
@@ -170,15 +170,17 @@ export function GenerateForm() {
 
       const response = await generateBoardAlignedExamPaper({
         ...values,
+        state: 'Gujarat',
+        district: values.district || "Gujarat",
+        taluka: values.taluka || "",
+        schoolName: values.schoolName || "",
         blueprintText: blueprintToUse,
-        state: 'Gujarat'
       });
       
       if (!response.success) {
         throw new Error(response.error || "પેપર તૈયાર કરવામાં અજ્ઞાત ભૂલ આવી છે.");
       }
 
-      // Important: Firestore does not support 'undefined'. Convert all to null or empty.
       const paperSettings: ExamPaperSettings = {
         state: values.state || "Gujarat",
         district: values.district || "",
@@ -236,7 +238,7 @@ export function GenerateForm() {
             <div className="space-y-6">
               <div className="flex items-center gap-2 border-b-2 border-primary/20 pb-2">
                 <MapPin className="h-5 w-5 text-primary" />
-                <h3 className="text-xl font-bold">શાળા અને સ્થાનની વિગતો</h3>
+                <h3 className="text-xl font-bold">શાળા અને સ્થાનની વિગતો (વૈકલ્પિક)</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -245,7 +247,7 @@ export function GenerateForm() {
                   name="district"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>જિલ્લો</FormLabel>
+                      <FormLabel>જિલ્લો (વૈકલ્પિક)</FormLabel>
                       <Select onValueChange={(val) => {
                         field.onChange(val);
                         form.setValue('taluka', '');
@@ -273,7 +275,7 @@ export function GenerateForm() {
                   name="taluka"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>તાલુકો / શહેર</FormLabel>
+                      <FormLabel>તાલુકો / શહેર (વૈકલ્પિક)</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedDistrict}>
                         <FormControl>
                           <SelectTrigger>
@@ -296,7 +298,7 @@ export function GenerateForm() {
                   name="schoolName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>શાળાનું નામ</FormLabel>
+                      <FormLabel>શાળાનું નામ (વૈકલ્પિક)</FormLabel>
                       {isCustomSchoolMode ? (
                         <div className="flex gap-2">
                           <FormControl>
