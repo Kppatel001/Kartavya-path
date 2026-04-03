@@ -48,9 +48,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { languages } from '@/lib/data';
-import { translateExamPaper } from '@/ai/flows/translate-exam-papers';
-import { socraticTutor } from '@/ai/flows/socratic-tutor-flow';
-import { gujaratiTTS } from '@/ai/flows/gujarati-tts-flow';
+import { translateExamPaper, socraticTutor, gujaratiTTS } from '@/ai/server';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 
@@ -194,13 +192,11 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         return;
       }
     } catch (error: any) {
-      // Don't show error if user cancelled or browser denied permission silently
       if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
-         // Fall through to clipboard
+         // Silently fail or handled by clipboard
       }
     }
 
-    // Fallback: Copy to clipboard
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
         await navigator.clipboard.writeText(window.location.href);
@@ -210,11 +206,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         });
       }
     } catch (err) {
-      toast({
-        variant: 'destructive',
-        title: 'ભૂલ',
-        description: 'લિંક કોપી કરી શકાઈ નથી.',
-      });
+      toast({ variant: 'destructive', title: 'ભૂલ', description: 'લિંક કોપી કરી શકાઈ નથી.' });
     }
   };
 
@@ -416,7 +408,6 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {/* Tutor Floating Chat - Only for owners or logged in students for now, but let's keep it for all if paper is loaded */}
       <Button 
         variant="secondary" 
         onClick={() => setChatOpen(true)}

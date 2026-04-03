@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,8 +37,7 @@ import {
   schoolsByDistrict 
 } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
-import { generateBoardAlignedExamPaper } from '@/ai/flows/generate-board-aligned-exam-paper';
-import { extractBlueprint } from '@/ai/flows/extract-blueprint';
+import { generateBoardAlignedExamPaper, extractBlueprint } from '@/ai/server';
 import { addPaper } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Upload, FileText, X, GraduationCap, MapPin, Plus, Trash2, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -144,16 +144,9 @@ export function GenerateForm() {
           const result = await extractBlueprint({ fileDataUri: dataUri });
           form.setValue('blueprintText', result.extractedBlueprint);
           setUseStructuredBlueprint(false);
-          toast({
-            title: 'બ્લુપ્રિન્ટ નિષ્કર્ષિત',
-            description: 'તમારા દસ્તાવેજનું સફળતાપૂર્વક વિશ્લેષણ કરવામાં આવ્યું છે.',
-          });
+          toast({ title: 'બ્લુપ્રિન્ટ નિષ્કર્ષિત', description: 'તમારા દસ્તાવેજનું સફળતાપૂર્વક વિશ્લેષણ કરવામાં આવ્યું છે.' });
         } catch (error) {
-          toast({
-            variant: 'destructive',
-            title: 'નિષ્કર્ષણ નિષ્ફળ',
-            description: 'દસ્તાવેજમાંથી વિગતો મેળવી શકાઈ નથી.',
-          });
+          toast({ variant: 'destructive', title: 'નિષ્કર્ષણ નિષ્ફળ', description: 'દસ્તાવેજમાંથી વિગતો મેળવી શકાઈ નથી.' });
         } finally {
           setIsExtracting(false);
         }
@@ -212,22 +205,14 @@ export function GenerateForm() {
       router.push(`/paper/${paperId}`);
 
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'નિષ્ફળતા',
-        description: error.message || 'પેપર બનાવવામાં ભૂલ આવી છે. ફરી પ્રયાસ કરો.',
-      });
+      toast({ variant: 'destructive', title: 'નિષ્ફળતા', description: error.message || 'પેપર બનાવવામાં ભૂલ આવી છે. ફરી પ્રયાસ કરો.' });
     } finally {
       setIsGenerating(false);
     }
   }
 
   const onInvalid = (errors: any) => {
-    toast({
-      variant: 'destructive',
-      title: 'માહિતી અધૂરી છે',
-      description: 'કૃપા કરીને લાલ રંગમાં દર્શાવેલ તમામ વિગતો યોગ્ય રીતે ભરો.',
-    });
+    toast({ variant: 'destructive', title: 'માહિતી અધૂરી છે', description: 'કૃપા કરીને લાલ રંગમાં દર્શાવેલ તમામ વિગતો યોગ્ય રીતે ભરો.' });
   };
 
   if (!mounted) return null;
@@ -507,11 +492,7 @@ export function GenerateForm() {
                   <FormItem>
                     <FormLabel>પ્રકરણો / ટોપિક્સ (અલ્પવિરામ થી અલગ કરો)</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="દા.ત. બીજગણિત, સંભાવના, પાયથાગોરસનો પ્રમેય" 
-                        {...field} 
-                        value={field.value || ''} 
-                      />
+                      <Input placeholder="દા.ત. બીજગણિત, સંભાવના, પાયથાગોરસનો પ્રમેય" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -526,18 +507,8 @@ export function GenerateForm() {
                   <h3 className="text-xl font-bold">બ્લુપ્રિન્ટ બિલ્ડર (વૈકલ્પિક)</h3>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    type="button" 
-                    variant={useStructuredBlueprint ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setUseStructuredBlueprint(true)}
-                  >માળખાગત</Button>
-                  <Button 
-                    type="button" 
-                    variant={!useStructuredBlueprint ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setUseStructuredBlueprint(false)}
-                  >દસ્તાવેજ/મેન્યુઅલ</Button>
+                  <Button type="button" variant={useStructuredBlueprint ? "default" : "outline"} size="sm" onClick={() => setUseStructuredBlueprint(true)}>માળખાગત</Button>
+                  <Button type="button" variant={!useStructuredBlueprint ? "default" : "outline"} size="sm" onClick={() => setUseStructuredBlueprint(false)}>દસ્તાવેજ/મેન્યુઅલ</Button>
                 </div>
               </div>
 
@@ -574,9 +545,7 @@ export function GenerateForm() {
                                 <FormLabel className="text-xs">પ્રશ્ન પ્રકાર</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="પ્રકાર પસંદ કરો" />
-                                    </SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="પ્રકાર પસંદ કરો" /></SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="MCQ">MCQ (વૈકલ્પિક)</SelectItem>
@@ -616,9 +585,7 @@ export function GenerateForm() {
                                 <FormLabel className="text-xs">મુશ્કેલી</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value || ''}>
                                   <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="કક્ષા" />
-                                    </SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="કક્ષા" /></SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="સામાન્ય">સામાન્ય</SelectItem>
@@ -636,36 +603,18 @@ export function GenerateForm() {
 
                   <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-muted/30 p-4 rounded-xl border border-dashed">
                     <div className="space-y-1">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => append({ 
-                          id: Math.random().toString(), 
-                          name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, 
-                          questionType: 'SA', 
-                          numQuestions: 0 as any, 
-                          marksPerQuestion: 0 as any, 
-                          difficulty: 'સામાન્ય' 
-                        })}
-                      >
+                      <Button type="button" variant="outline" onClick={() => append({ id: Math.random().toString(), name: `વિભાગ ${String.fromCharCode(65 + fields.length)}`, questionType: 'SA', numQuestions: 0 as any, marksPerQuestion: 0 as any, difficulty: 'સામાન્ય' })}>
                         <Plus className="mr-2 h-4 w-4" /> નવો વિભાગ ઉમેરો
                       </Button>
                       <p className="text-[10px] text-muted-foreground italic">(વૈકલ્પિક: તમે તેને ખાલી પણ છોડી શકો છો)</p>
                     </div>
-
                     <div className="flex items-center gap-4">
                        <div className="text-right">
                           <p className="text-sm text-muted-foreground">ગણતરી મુજબ કુલ ગુણ:</p>
                           <div className="flex items-center gap-2 justify-end">
-                             <span className={`text-2xl font-black ${isMarksMatching || fields.length === 0 ? 'text-green-500' : 'text-destructive'}`}>
-                                {Number.isNaN(calculatedTotal) ? 0 : calculatedTotal}
-                             </span>
+                             <span className={`text-2xl font-black ${isMarksMatching || fields.length === 0 ? 'text-green-500' : 'text-destructive'}`}>{Number.isNaN(calculatedTotal) ? 0 : calculatedTotal}</span>
                              <span className="text-muted-foreground">/ {watchTotalMarks || 0}</span>
-                             {(isMarksMatching || fields.length === 0) ? (
-                               <CheckCircle2 className="h-5 w-5 text-green-500" />
-                             ) : (
-                               <AlertCircle className="h-5 w-5 text-destructive" />
-                             )}
+                             {(isMarksMatching || fields.length === 0) ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <AlertCircle className="h-5 w-5 text-destructive" />}
                           </div>
                        </div>
                     </div>
@@ -673,17 +622,8 @@ export function GenerateForm() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div 
-                    className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-8 bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer group"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <input
-                        type="file"
-                        className="hidden"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept=".pdf,image/*,.doc,.docx"
-                    />
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-8 bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+                    <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".pdf,image/*,.doc,.docx" />
                     {isExtracting ? (
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -692,10 +632,7 @@ export function GenerateForm() {
                     ) : uploadedFile ? (
                         <div className="flex flex-col items-center gap-3">
                             <div className="p-4 bg-primary/10 rounded-full"><FileText className="h-10 w-10 text-primary" /></div>
-                            <div className="text-center">
-                                <p className="font-bold">{uploadedFile.name}</p>
-                                <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                            </div>
+                            <div className="text-center"><p className="font-bold">{uploadedFile.name}</p></div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-4">
@@ -707,21 +644,13 @@ export function GenerateForm() {
                         </div>
                     )}
                   </div>
-
                   <FormField
                     control={form.control}
                     name="blueprintText"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>માળખું / સૂચનાઓ (વૈકલ્પિક)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="અહીં તમારા પેપરનું માળખું લખો (દા.ત., વિભાગ A માં ૧૦ MCQs...)" 
-                            className="min-h-[120px]"
-                            {...field} 
-                            value={field.value || ''}
-                          />
-                        </FormControl>
+                        <FormControl><Textarea placeholder="અહીં તમારા પેપરનું માળખું લખો..." className="min-h-[120px]" {...field} value={field.value || ''} /></FormControl>
                       </FormItem>
                     )}
                   />
@@ -729,24 +658,12 @@ export function GenerateForm() {
               )}
             </div>
           </CardContent>
-          
           <CardFooter className="bg-muted/30 border-t p-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Info className="h-4 w-4" />
-              <span>જો કોઈ વિગત અધૂરી હશે, તો એઆઈ બોર્ડના ધોરણો મુજબ પેપર બનાવશે.</span>
+              <Info className="h-4 w-4" /><span>જો કોઈ વિગત અધૂરી હશે, તો એઆઈ બોર્ડના ધોરણો મુજબ પેપર બનાવશે.</span>
             </div>
-            <Button 
-              type="submit" 
-              size="lg" 
-              className="w-full sm:w-auto min-w-[200px] h-14 text-xl font-bold shadow-xl shadow-primary/20" 
-              disabled={isGenerating || isExtracting}
-            >
-              {isGenerating ? (
-                <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-              ) : (
-                <Sparkles className="mr-3 h-6 w-6" />
-              )}
-              પ્રશ્નપત્ર તૈયાર કરો
+            <Button type="submit" size="lg" className="w-full sm:w-auto min-w-[200px] h-14 text-xl font-bold shadow-xl shadow-primary/20" disabled={isGenerating || isExtracting}>
+              {isGenerating ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Sparkles className="mr-3 h-6 w-6" />}પ્રશ્નપત્ર તૈયાર કરો
             </Button>
           </CardFooter>
         </form>
