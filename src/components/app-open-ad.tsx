@@ -10,13 +10,19 @@ const APP_OPEN_AD_UNIT_ID = "ca-app-pub-1866650216428197/2176666497";
 export function AppOpenAd() {
   const [isVisible, setIsVisible] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check if we've shown it this session to avoid intrusiveness
-    const hasShown = sessionStorage.getItem('app_open_ad_shown');
-    if (!hasShown) {
-      setIsVisible(true);
-      sessionStorage.setItem('app_open_ad_shown', 'true');
+    setMounted(true);
+    // Safe access to sessionStorage after mount
+    try {
+      const hasShown = sessionStorage.getItem('app_open_ad_shown');
+      if (!hasShown) {
+        setIsVisible(true);
+        sessionStorage.setItem('app_open_ad_shown', 'true');
+      }
+    } catch (e) {
+      console.error("Session storage access error:", e);
     }
   }, []);
 
@@ -27,7 +33,7 @@ export function AppOpenAd() {
     }
   }, [isVisible, countdown]);
 
-  if (!isVisible) return null;
+  if (!mounted || !isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center p-6 animate-in fade-in duration-700 no-print">

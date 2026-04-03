@@ -90,15 +90,21 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
     setDisplayDate(format(new Date(), 'dd/MM/yyyy'));
   }, []);
 
+  // Ownership check: Anyone with ID can read, but only owner can edit
   const isOwner = user && paper && user.uid === paper.userId;
 
   const getVisibleContent = (rawContent: string, showKey: boolean) => {
+    if (!rawContent) return '';
     if (!rawContent.includes(ANSWER_KEY_DELIMITER)) return rawContent;
     if (showKey) return rawContent;
     return rawContent.split(ANSWER_KEY_DELIMITER)[0].trim();
   };
 
   const paginateContent = (text: string) => {
+    if (!text) {
+      setPages([]);
+      return;
+    }
     const lines = text.split('\n');
     const newPages: string[] = [];
     if (lines.length > LINES_PER_PAGE) {
@@ -106,11 +112,10 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
       for (let i = 0; i < numPages; i++) {
         newPages.push(lines.slice(i * LINES_PER_PAGE, (i + 1) * LINES_PER_PAGE).join('\n'));
       }
-    } else if (text) {
+    } else {
       newPages.push(text);
     }
     setPages(newPages);
-    setCurrentPage(p => Math.max(1, Math.min(p, newPages.length || 1)));
   };
 
   useEffect(() => {
@@ -119,18 +124,21 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         .then((fetchedPaper) => {
           if (fetchedPaper) {
             setPaper(fetchedPaper);
-            setContent(fetchedPaper.content);
-            const visible = getVisibleContent(fetchedPaper.content, showAnswerKey);
+            setContent(fetchedPaper.content || '');
+            const visible = getVisibleContent(fetchedPaper.content || '', showAnswerKey);
             paginateContent(visible);
           } else {
             toast({ variant: 'destructive', title: 'ભૂલ', description: 'પ્રશ્નપત્ર મળી શક્યું નથી.' });
-            router.push('/history');
+            router.push('/');
           }
-          setLoading(false);
         })
-        .catch(() => {
+        .catch((e) => {
+          console.error("Error fetching paper:", e);
+          toast({ variant: 'destructive', title: 'ભૂલ', description: 'લોડિંગ દરમિયાન સમસ્યા આવી.' });
+          router.push('/');
+        })
+        .finally(() => {
           setLoading(false);
-          router.push('/history');
         });
     }
   }, [id, router, toast, showAnswerKey]);
@@ -151,11 +159,15 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   const handleSave = () => {
     if (!id || !isOwner) return;
     startSavingTransition(async () => {
-      await updatePaperContent(id, content);
-      const visible = getVisibleContent(content, showAnswerKey);
-      paginateContent(visible);
-      setIsEditing(false);
-      toast({ title: 'સફળતા', description: 'પ્રશ્નપત્ર સેવ થઈ ગયું છે.' });
+      try {
+        await updatePaperContent(id, content);
+        const visible = getVisibleContent(content, showAnswerKey);
+        paginateContent(visible);
+        setIsEditing(false);
+        toast({ title: 'સફળતા', description: 'પ્રશ્નપત્ર સેવ થઈ ગયું છે.' });
+      } catch (e) {
+        toast({ variant: 'destructive', title: 'ભૂલ', description: 'સેવ કરવામાં સમસ્યા આવી.' });
+      }
     });
   };
 
@@ -164,14 +176,16 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
     startTranslationTransition(async () => {
       try {
         const result = await translateExamPaper({ examPaper: content, targetLanguage });
-        const newContent = result.translatedExamPaper;
-        setContent(newContent);
-        const visible = getVisibleContent(newContent, showAnswerKey);
-        paginateContent(visible);
-        if (isOwner) {
-            await updatePaperContent(id, newContent);
+        if (result && result.translatedExamPaper) {
+          const newContent = result.translatedExamPaper;
+          setContent(newContent);
+          const visible = getVisibleContent(newContent, showAnswerKey);
+          paginateContent(visible);
+          if (isOwner) {
+              await updatePaperContent(id, newContent);
+          }
+          toast({ title: 'અનુવાદ સફળ', description: `પેપરનું ${targetLanguage}માં અનુવાદ થઈ ગયું છે.` });
         }
-        toast({ title: 'અનુવાદ સફળ', description: `પેપરનું ${targetLanguage}માં અનુવાદ થઈ ગયું છે.` });
       } catch (error) {
         toast({ variant: 'destructive', title: 'ભૂલ', description: 'અનુવાદ નિષ્ફળ રહ્યો.' });
       }
@@ -182,7 +196,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
     const shareData = {
       title: paper?.title || 'Exam Paper',
       text: `કર્તવ્ય પથ દ્વારા તૈયાર કરાયેલ પ્રશ્નપત્ર: ${paper?.title || 'પરીક્ષા પ્રશ્નપત્ર'}`,
-      url: window.location.href,
+      url: typeof window !== 'undefined' ? window.location.href : '',
     };
 
     try {
@@ -190,11 +204,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         await navigator.share(shareData);
         return;
       }
-    } catch (error: any) {
-      if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
-         // Silently fail or handled by clipboard
-      }
-    }
+    } catch (error: any) {}
 
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -216,21 +226,20 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
       return;
     }
 
-    const textToSpeak = pages[currentPage - 1]?.slice(0, 500) || ""; 
+    const textToSpeak = pages[currentPage - 1]?.slice(0, 1000) || ""; 
     if (!textToSpeak) return;
 
     setIsSpeaking(true);
     try {
       const result = await gujaratiTTS({ text: textToSpeak });
-      if (audioRef.current) {
-        audioRef.current.src = result.audioDataUri;
+      if (result && result.audioDataUri) {
+        if (!audioRef.current) {
+          audioRef.current = new Audio(result.audioDataUri);
+        } else {
+          audioRef.current.src = result.audioDataUri;
+        }
         audioRef.current.play();
         audioRef.current.onended = () => setIsSpeaking(false);
-      } else {
-        const audio = new Audio(result.audioDataUri);
-        audioRef.current = audio;
-        audio.play();
-        audio.onended = () => setIsSpeaking(false);
       }
     } catch (error) {
       toast({ variant: 'destructive', title: 'ભૂલ', description: 'અવાજ જનરેટ થઈ શક્યો નથી.' });
@@ -255,7 +264,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
         history: chatMessages
       });
       
-      setChatMessages(prev => [...prev, { role: 'model', text: result.response }]);
+      setChatMessages(prev => [...prev, { role: 'model', text: result.response || "ટ્યુટર અત્યારે વ્યસ્ત છે." }]);
     } catch (error) {
       toast({ variant: 'destructive', title: 'ભૂલ', description: 'ટ્યુટર કનેક્ટ થઈ શક્યું નથી.' });
     } finally {
@@ -263,7 +272,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-1/4" />
@@ -277,17 +286,17 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
   const PaperHeader = () => (
     <div className="mb-6 border-b-2 border-black pb-4 text-center">
         <div className="flex justify-center items-center gap-4 mb-2">
-            {paper.settings.schoolLogo && (
+            {paper.settings?.schoolLogo && (
                 <img src={paper.settings.schoolLogo} alt="Logo" className="h-14 w-auto object-contain" />
             )}
-            <h2 className="text-2xl font-bold uppercase tracking-wide">{paper.settings.schoolName || 'પરીક્ષા પ્રશ્નપત્ર'}</h2>
+            <h2 className="text-2xl font-bold uppercase tracking-wide">{paper.settings?.schoolName || 'પરીક્ષા પ્રશ્નપત્ર'}</h2>
         </div>
         <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-sm font-bold border-t border-black pt-3">
-            <div className="text-left">વિષય: {paper.settings.subject}</div>
-            <div className="text-right">ધોરણ: {paper.settings.classLevel} ({paper.settings.board})</div>
+            <div className="text-left">વિષય: {paper.settings?.subject || '--'}</div>
+            <div className="text-right">ધોરણ: {paper.settings?.classLevel || '--'} ({paper.settings?.board || '--'})</div>
             <div className="text-left">તારીખ: {displayDate}</div>
-            <div className="text-right">કુલ ગુણ: {paper.settings.totalMarks}</div>
-            <div className="text-left">સમય: {paper.settings.timeAllowed || '---'}</div>
+            <div className="text-right">કુલ ગુણ: {paper.settings?.totalMarks || '--'}</div>
+            <div className="text-left">સમય: {paper.settings?.timeAllowed || '---'}</div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-left border-t border-dashed border-black/30 pt-3 font-mono text-xs">
             <div>વિદ્યાર્થીનું નામ: _________________________________</div>
@@ -309,7 +318,7 @@ export default function PaperPage({ params }: { params: Promise<{ id: string }> 
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight font-headline">{paper.title}</h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ: {paper.settings.board}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">બોર્ડ: {paper.settings?.board}</p>
                 </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleShare} className="shrink-0 bg-primary/5 hover:bg-primary/10 border-primary/20">

@@ -14,8 +14,10 @@ interface NativeAdProps {
 
 export function NativeAd({ className }: NativeAdProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Simulate AdMob Native Ad loading
     const timer = setTimeout(() => {
       setIsLoaded(true);
@@ -23,6 +25,8 @@ export function NativeAd({ className }: NativeAdProps) {
 
     return () => clearTimeout(timer);
   }, []);
+
+  if (!mounted) return null;
 
   if (!isLoaded) {
     return (

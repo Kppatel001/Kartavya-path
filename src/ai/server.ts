@@ -10,6 +10,13 @@ import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import wav from 'wav';
 
+// Log for debugging in development
+const log = (msg: string, data?: any) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[AI Server]: ${msg}`, data ? JSON.stringify(data, null, 2) : '');
+  }
+};
+
 // --- 1. Exam Paper Generation ---
 
 const GeneratePaperInputSchema = z.object({
@@ -48,8 +55,15 @@ const generatePaperPrompt = ai.definePrompt({
 });
 
 export async function generateBoardAlignedExamPaper(input: GeneratePaperInput) {
-  const { output } = await generatePaperPrompt(input);
-  return { success: true, examPaper: output?.examPaper };
+  log('Starting paper generation', input);
+  try {
+    const { output } = await generatePaperPrompt(input);
+    if (!output?.examPaper) throw new Error("AI failed to return content");
+    return { success: true, examPaper: output.examPaper };
+  } catch (error: any) {
+    console.error("Critical AI Error (Paper Gen):", error);
+    return { success: false, error: "AI પ્રશ્નપત્ર તૈયાર કરવામાં નિષ્ફળ રહ્યું. કૃપા કરીને ફરી પ્રયાસ કરો." };
+  }
 }
 
 // --- 2. Blueprint Extraction ---
@@ -71,8 +85,14 @@ const extractBlueprintPrompt = ai.definePrompt({
 });
 
 export async function extractBlueprint(input: { fileDataUri: string }) {
-  const { output } = await extractBlueprintPrompt(input);
-  return { extractedBlueprint: output?.extractedBlueprint || "" };
+  log('Starting blueprint extraction');
+  try {
+    const { output } = await extractBlueprintPrompt(input);
+    return { extractedBlueprint: output?.extractedBlueprint || "" };
+  } catch (error) {
+    console.error("AI Blueprint Error:", error);
+    return { extractedBlueprint: "" };
+  }
 }
 
 // --- 3. Translation ---
@@ -95,8 +115,14 @@ const translatePrompt = ai.definePrompt({
 });
 
 export async function translateExamPaper(input: { examPaper: string, targetLanguage: string }) {
-  const { output } = await translatePrompt(input);
-  return { translatedExamPaper: output?.translatedExamPaper || "" };
+  log('Starting translation to', input.targetLanguage);
+  try {
+    const { output } = await translatePrompt(input);
+    return { translatedExamPaper: output?.translatedExamPaper || "" };
+  } catch (error) {
+    console.error("AI Translation Error:", error);
+    return { translatedExamPaper: "" };
+  }
 }
 
 // --- 4. Socratic Tutor ---
@@ -126,39 +152,55 @@ const tutorPrompt = ai.definePrompt({
 });
 
 export async function socraticTutor(input: z.infer<typeof TutorInputSchema>) {
-  const { output } = await tutorPrompt(input);
-  return { response: output?.response || "" };
+  log('Starting socratic tutor session');
+  try {
+    const { output } = await tutorPrompt(input);
+    return { response: output?.response || "" };
+  } catch (error) {
+    console.error("AI Tutor Error:", error);
+    return { response: "માફ કરશો, અત્યારે ટ્યુટર કનેક્ટ થઈ શકતું નથી." };
+  }
 }
 
 // --- 5. Gujarati TTS ---
 
 export async function gujaratiTTS(input: { text: string }) {
-  const { media } = await ai.generate({
-    model: googleAI.model('gemini-2.5-flash-preview-tts'),
-    config: {
-      responseModalities: ['AUDIO'],
-      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } } },
-    },
-    prompt: `તમે એક નિષ્ણાત શિક્ષક છો. આ ગુજરાતી લખાણને સ્પષ્ટ અને પ્રેમાળ અવાજમાં બોલો: ${input.text}`,
-  });
+  log('Starting Gujarati TTS');
+  try {
+    const { media } = await ai.generate({
+      model: googleAI.model('gemini-2.5-flash-preview-tts'),
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } } },
+      },
+      prompt: `તમે એક નિષ્ણાત શિક્ષક છો. આ ગુજરાતી લખાણને સ્પષ્ટ અને પ્રેમાળ અવાજમાં બોલો: ${input.text}`,
+    });
 
-  if (!media || !media.url) throw new Error('TTS Failed');
+    if (!media || !media.url) throw new Error('TTS Failed');
 
-  const base64Audio = media.url.substring(media.url.indexOf(',') + 1);
-  const pcmBuffer = Buffer.from(base64Audio, 'base64');
-  const wavBase64 = await toWav(pcmBuffer);
+    const base64Audio = media.url.substring(media.url.indexOf(',') + 1);
+    const pcmBuffer = Buffer.from(base64Audio, 'base64');
+    const wavBase64 = await toWav(pcmBuffer);
 
-  return { audioDataUri: 'data:audio/wav;base64,' + wavBase64 };
+    return { audioDataUri: 'data:audio/wav;base64,' + wavBase64 };
+  } catch (error) {
+    console.error("AI TTS Error:", error);
+    throw error;
+  }
 }
 
 async function toWav(pcmData: Buffer, channels = 1, rate = 24000, sampleWidth = 2): Promise<string> {
   return new Promise((resolve, reject) => {
-    const writer = new wav.Writer({ channels, sampleRate: rate, bitDepth: sampleWidth * 8 });
-    let bufs: Buffer[] = [];
-    writer.on('error', reject);
-    writer.on('data', (d: Buffer) => bufs.push(d));
-    writer.on('end', () => resolve(Buffer.concat(bufs).toString('base64')));
-    writer.write(pcmData);
-    writer.end();
+    try {
+      const writer = new wav.Writer({ channels, sampleRate: rate, bitDepth: sampleWidth * 8 });
+      let bufs: Buffer[] = [];
+      writer.on('error', reject);
+      writer.on('data', (d: Buffer) => bufs.push(d));
+      writer.on('end', () => resolve(Buffer.concat(bufs).toString('base64')));
+      writer.write(pcmData);
+      writer.end();
+    } catch (e) {
+      reject(e);
+    }
   });
 }

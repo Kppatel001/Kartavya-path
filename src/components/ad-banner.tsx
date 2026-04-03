@@ -21,11 +21,15 @@ export function AdBanner({
 }: AdBannerProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // AdMob initialization simulation
-    console.log(`Initializing AdMob with App ID: ${ADMOB_APP_ID}`);
-    console.log(`Loading Banner Ad Unit: ${unitId} at ${position}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Initializing AdMob with App ID: ${ADMOB_APP_ID}`);
+      console.log(`Loading Banner Ad Unit: ${unitId} at ${position}`);
+    }
     
     const timer = setTimeout(() => {
       setIsLoaded(true);
@@ -36,7 +40,7 @@ export function AdBanner({
     };
   }, [unitId, position]);
 
-  if (!isVisible) return null;
+  if (!mounted || !isVisible) return null;
 
   const positionClasses = {
     bottom: "fixed bottom-0 left-0 right-0 z-50 w-full flex justify-center translate-y-0",
